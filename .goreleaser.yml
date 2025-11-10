@@ -1,17 +1,17 @@
 builds:
 # LINUX
-  - id: signatory-linux-amd
-    binary: signatory
+  - id: mavsign-linux-amd
+    binary: mavsign
     env:
       - CGO_ENABLED=1
       - CC=gcc
       - CXX=g++
       - >-
         {{- if .IsSnapshot }}GOEXPERIMENT=coverageredesign{{- end }}
-    main: ./cmd/signatory/main.go
+    main: ./cmd/mavsign/main.go
     ldflags:
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitRevision={{.Version}}'
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitBranch={{.Version}}'
+      - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitRevision={{.Version}}'
+      - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitBranch={{.Version}}'
     goos:
       - linux
     goarch:
@@ -19,18 +19,18 @@ builds:
     flags:
       - '{{ if .IsSnapshot }}-cover{{ else }}-v{{ end }}'
 
-  - id: signatory-cli-linux-amd
-    binary: signatory-cli
+  - id: mavsign-cli-linux-amd
+    binary: mavsign-cli
     env:
       - CGO_ENABLED=1
       - CC=gcc
       - CXX=g++
       - >-
         {{- if .IsSnapshot }}GOEXPERIMENT=coverageredesign{{- end }}
-    main: ./cmd/signatory-cli/main.go
+    main: ./cmd/mavsign-cli/main.go
     ldflags:
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitRevision={{.Version}}'
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitBranch={{.Version}}'
+      - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitRevision={{.Version}}'
+      - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitBranch={{.Version}}'
     goos:
       - linux
     goarch:
@@ -38,18 +38,18 @@ builds:
     flags:
       - '{{ if .IsSnapshot }}-cover{{ else }}-v{{ end }}'
 
-  - id: signatory-linux-arm64
-    binary: signatory
+  - id: mavsign-linux-arm64
+    binary: mavsign
     env:
       - CGO_ENABLED=1
       - CC=aarch64-linux-gnu-gcc
       - CXX=aarch64-linux-gnu-g++
       - >-
         {{- if .IsSnapshot }}GOEXPERIMENT=coverageredesign{{- end }}
-    main: ./cmd/signatory/main.go
+    main: ./cmd/mavsign/main.go
     ldflags:
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitRevision={{.Version}}'
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitBranch={{.Version}}'
+      - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitRevision={{.Version}}'
+      - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitBranch={{.Version}}'
     goos:
       - linux
     goarch:
@@ -57,18 +57,18 @@ builds:
     flags:
       - '{{ if .IsSnapshot }}-cover{{ else }}-v{{ end }}'
 
-  - id: signatory-cli-linux-arm64
-    binary: signatory-cli
+  - id: mavsign-cli-linux-arm64
+    binary: mavsign-cli
     env:
       - CGO_ENABLED=1
       - CC=aarch64-linux-gnu-gcc
       - CXX=aarch64-linux-gnu-g++
       - >-
         {{- if .IsSnapshot }}GOEXPERIMENT=coverageredesign{{- end }}
-    main: ./cmd/signatory-cli/main.go
+    main: ./cmd/mavsign-cli/main.go
     ldflags:
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitRevision={{.Version}}'
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitBranch={{.Version}}'
+      - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitRevision={{.Version}}'
+      - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitBranch={{.Version}}'
     goos:
       - linux
     goarch:
@@ -76,18 +76,18 @@ builds:
     flags:
       - '{{ if .IsSnapshot }}-cover{{ else }}-v{{ end }}'
 
-  - id: signatory-linux-arm
-    binary: signatory
+  - id: mavsign-linux-arm
+    binary: mavsign
     env:
       - CGO_ENABLED=1
       - CC=arm-linux-gnueabihf-gcc
       - CXX=arm-linux-gnueabihf-g++
       - >-
         {{- if .IsSnapshot }}GOEXPERIMENT=coverageredesign{{- end }}
-    main: ./cmd/signatory/main.go
+    main: ./cmd/mavsign/main.go
     ldflags:
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitRevision={{.Version}}'
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitBranch={{.Version}}'
+      - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitRevision={{.Version}}'
+      - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitBranch={{.Version}}'
     goos:
       - linux
     goarch:
@@ -98,18 +98,18 @@ builds:
     flags:
       - '{{ if .IsSnapshot }}-cover{{ else }}-v{{ end }}'
 
-  - id: signatory-cli-linux-arm
-    binary: signatory-cli
+  - id: mavsign-cli-linux-arm
+    binary: mavsign-cli
     env:
       - CGO_ENABLED=1
       - CC=arm-linux-gnueabihf-gcc
       - CXX=arm-linux-gnueabihf-g++
       - >-
         {{- if .IsSnapshot }}GOEXPERIMENT=coverageredesign{{- end }}
-    main: ./cmd/signatory-cli/main.go
+    main: ./cmd/mavsign-cli/main.go
     ldflags:
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitRevision={{.Version}}'
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitBranch={{.Version}}'
+      - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitRevision={{.Version}}'
+      - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitBranch={{.Version}}'
     goos:
       - linux
     goarch:
@@ -121,18 +121,18 @@ builds:
       - '{{ if .IsSnapshot }}-cover{{ else }}-v{{ end }}'
 
 # MACOS
-  - id: signatory-darwin-amd
-    binary: signatory
+  - id: mavsign-darwin-amd
+    binary: mavsign
     env:
       - CGO_ENABLED=1
       - CC=o64-clang
       - CXX=o64-clang++
       - >-
         {{- if .IsSnapshot }}GOEXPERIMENT=coverageredesign{{- end }}
-    main: ./cmd/signatory/main.go
+    main: ./cmd/mavsign/main.go
     ldflags:
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitRevision={{.Version}}'
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitBranch={{.Version}}'
+      - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitRevision={{.Version}}'
+      - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitBranch={{.Version}}'
     goos:
       - darwin
     goarch:
@@ -140,18 +140,18 @@ builds:
     flags:
       - '{{ if .IsSnapshot }}-cover{{ else }}-v{{ end }}'
 
-  - id: signatory-cli-darwing-amd
-    binary: signatory-cli
+  - id: mavsign-cli-darwing-amd
+    binary: mavsign-cli
     env:
       - CGO_ENABLED=1
       - CC=o64-clang
       - CXX=o64-clang++
       - >-
         {{- if .IsSnapshot }}GOEXPERIMENT=coverageredesign{{- end }}
-    main: ./cmd/signatory-cli/main.go
+    main: ./cmd/mavsign-cli/main.go
     ldflags:
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitRevision={{.Version}}'
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitBranch={{.Version}}'
+      - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitRevision={{.Version}}'
+      - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitBranch={{.Version}}'
     goos:
       - darwin
     goarch:
@@ -159,18 +159,18 @@ builds:
     flags:
       - '{{ if .IsSnapshot }}-cover{{ else }}-v{{ end }}'
 
-  - id: signatory-darwin-arm
-    binary: signatory
+  - id: mavsign-darwin-arm
+    binary: mavsign
     env:
       - CGO_ENABLED=1
       - CC=oa64-clang
       - CXX=oa64-clang++
       - >-
         {{- if .IsSnapshot }}GOEXPERIMENT=coverageredesign{{- end }}
-    main: ./cmd/signatory/main.go
+    main: ./cmd/mavsign/main.go
     ldflags:
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitRevision={{.Version}}'
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitBranch={{.Version}}'
+      - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitRevision={{.Version}}'
+      - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitBranch={{.Version}}'
     goos:
       - darwin
     goarch:
@@ -178,18 +178,18 @@ builds:
     flags:
       - '{{ if .IsSnapshot }}-cover{{ else }}-v{{ end }}'
 
-  - id: signatory-cli-darwing-arm
-    binary: signatory-cli
+  - id: mavsign-cli-darwing-arm
+    binary: mavsign-cli
     env:
       - CGO_ENABLED=1
       - CC=oa64-clang
       - CXX=oa64-clang++
       - >-
         {{- if .IsSnapshot }}GOEXPERIMENT=coverageredesign{{- end }}
-    main: ./cmd/signatory-cli/main.go
+    main: ./cmd/mavsign-cli/main.go
     ldflags:
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitRevision={{.Version}}'
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitBranch={{.Version}}'
+      - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitRevision={{.Version}}'
+      - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitBranch={{.Version}}'
     goos:
       - darwin
     goarch:
@@ -198,51 +198,51 @@ builds:
       - '{{ if .IsSnapshot }}-cover{{ else }}-v{{ end }}'
 
 # WINDOWS
-  - id: signatory-windows-amd
-    binary: signatory
-    env:
-      - CGO_ENABLED=1
-      - CC=x86_64-w64-mingw32-gcc
-      - CXX=x86_64-w64-mingw32-g++
-      - >-
-        {{- if .IsSnapshot }}GOEXPERIMENT=coverageredesign{{- end }}
-    main: ./cmd/signatory/main.go
-    ldflags:
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitRevision={{.Version}}'
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitBranch={{.Version}}'
-    goos:
-      - windows
-    goarch:
-      - amd64
-    flags:
-      - '{{ if .IsSnapshot }}-cover{{ else }}-v{{ end }}'
+  # - id: mavsign-windows-amd
+  #   binary: mavsign
+  #   env:
+  #     - CGO_ENABLED=1
+  #     - CC=x86_64-w64-mingw32-gcc
+  #     - CXX=x86_64-w64-mingw32-g++
+  #     - >-
+  #       {{- if .IsSnapshot }}GOEXPERIMENT=coverageredesign{{- end }}
+  #   main: ./cmd/mavsign/main.go
+  #   ldflags:
+  #     - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitRevision={{.Version}}'
+  #     - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitBranch={{.Version}}'
+  #   goos:
+  #     - windows
+  #   goarch:
+  #     - amd64
+  #   flags:
+  #     - '{{ if .IsSnapshot }}-cover{{ else }}-v{{ end }}'
 
-  - id: signatory-cli-windows-amd
-    binary: signatory-cli
-    env:
-      - CGO_ENABLED=1
-      - CC=x86_64-w64-mingw32-gcc
-      - CXX=x86_64-w64-mingw32-g++
-      - >-
-        {{- if .IsSnapshot }}GOEXPERIMENT=coverageredesign{{- end }}
-    main: ./cmd/signatory-cli/main.go
-    ldflags:
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitRevision={{.Version}}'
-      - '-X github.com/ecadlabs/signatory/pkg/metrics.GitBranch={{.Version}}'
-    goos:
-      - windows
-    goarch:
-      - amd64
-    flags:
-      - '{{ if .IsSnapshot }}-cover{{ else }}-v{{ end }}'
+  # - id: mavsign-cli-windows-amd
+  #   binary: mavsign-cli
+  #   env:
+  #     - CGO_ENABLED=1
+  #     - CC=x86_64-w64-mingw32-gcc
+  #     - CXX=x86_64-w64-mingw32-g++
+  #     - >-
+  #       {{- if .IsSnapshot }}GOEXPERIMENT=coverageredesign{{- end }}
+  #   main: ./cmd/mavsign-cli/main.go
+  #   ldflags:
+  #     - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitRevision={{.Version}}'
+  #     - '-X github.com/mavryk-network/mavsign/pkg/metrics.GitBranch={{.Version}}'
+  #   goos:
+  #     - windows
+  #   goarch:
+  #     - amd64
+  #   flags:
+  #     - '{{ if .IsSnapshot }}-cover{{ else }}-v{{ end }}'
 
 dockers:
   - ids:
-      - signatory
-      - signatory-cli
+      - mavsign
+      - mavsign-cli
   - image_templates:
-    - '{{ if .IsSnapshot }}ghcr.io/{{ end }}ecadlabs/signatory:{{ if .IsSnapshot }}{{ .FullCommit }}{{ else }}{{ .Tag }}{{ end }}-amd64'
-    - '{{ if not .IsSnapshot }}ecadlabs/signatory:latest-amd64{{ end }}'
+    - '{{ if .IsSnapshot }}ghcr.io/{{ end }}mavrykdynamics/mavsign:{{ if .IsSnapshot }}{{ .FullCommit }}{{ else }}{{ .Tag }}{{ end }}-amd64'
+    - '{{ if not .IsSnapshot }}mavrykdynamics/mavsign:latest-amd64{{ end }}'
     dockerfile: goreleaser.dockerfile
     use: buildx
     build_flag_templates:
@@ -254,8 +254,8 @@ dockers:
     - "--label=org.opencontainers.image.source={{.GitURL}}"
     - "--platform=linux/amd64"
   - image_templates:
-    - '{{ if .IsSnapshot }}ghcr.io/{{ end }}ecadlabs/signatory:{{ if .IsSnapshot }}{{ .FullCommit }}{{ else }}{{ .Tag }}{{ end }}-arm64'
-    - '{{ if not .IsSnapshot }}ecadlabs/signatory:latest-arm64{{ end }}'
+    - '{{ if .IsSnapshot }}ghcr.io/{{ end }}mavrykdynamics/mavsign:{{ if .IsSnapshot }}{{ .FullCommit }}{{ else }}{{ .Tag }}{{ end }}-arm64'
+    - '{{ if not .IsSnapshot }}mavrykdynamics/mavsign:latest-arm64{{ end }}'
     dockerfile: goreleaser.dockerfile
     use: buildx
     build_flag_templates:
@@ -268,8 +268,8 @@ dockers:
     - "--platform=linux/arm64"
     goarch: arm64
   - image_templates:
-    - '{{ if .IsSnapshot }}ghcr.io/{{ end }}ecadlabs/signatory:{{ if .IsSnapshot }}{{ .FullCommit }}{{ else }}{{ .Tag }}{{ end }}-armv7'
-    - '{{ if not .IsSnapshot }}ecadlabs/signatory:latest-armv7{{ end }}'
+    - '{{ if .IsSnapshot }}ghcr.io/{{ end }}mavrykdynamics/mavsign:{{ if .IsSnapshot }}{{ .FullCommit }}{{ else }}{{ .Tag }}{{ end }}-armv7'
+    - '{{ if not .IsSnapshot }}mavrykdynamics/mavsign:latest-armv7{{ end }}'
     dockerfile: goreleaser.dockerfile
     use: buildx
     build_flag_templates:
@@ -284,16 +284,16 @@ dockers:
     goarm: '7'
 
 docker_manifests:
-  - name_template: 'ecadlabs/signatory:latest'
+  - name_template: 'mavryk-network/mavsign:latest'
     image_templates:
-      - 'ecadlabs/signatory:latest-amd64'
-      - 'ecadlabs/signatory:latest-arm64'
-      - 'ecadlabs/signatory:latest-armv7'
-  - name_template: 'ecadlabs/signatory:{{ .Tag }}'
+      - 'mavryk-network/mavsign:latest-amd64'
+      - 'mavryk-network/mavsign:latest-arm64'
+      - 'mavryk-network/mavsign:latest-armv7'
+  - name_template: 'mavryk-network/mavsign:{{ .Tag }}'
     image_templates:
-      - 'ecadlabs/signatory:{{ .Tag }}-amd64'
-      - 'ecadlabs/signatory:{{ .Tag }}-arm64'
-      - 'ecadlabs/signatory:{{ .Tag }}-armv7'
+      - 'mavryk-network/mavsign:{{ .Tag }}-amd64'
+      - 'mavryk-network/mavsign:{{ .Tag }}-arm64'
+      - 'mavryk-network/mavsign:{{ .Tag }}-armv7'
 
 checksum:
   name_template: checksums.txt

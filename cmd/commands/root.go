@@ -5,10 +5,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ecadlabs/signatory/pkg/auth"
-	"github.com/ecadlabs/signatory/pkg/config"
-	"github.com/ecadlabs/signatory/pkg/metrics"
-	"github.com/ecadlabs/signatory/pkg/signatory"
+	"github.com/mavryk-network/mavsign/pkg/auth"
+	"github.com/mavryk-network/mavsign/pkg/config"
+	"github.com/mavryk-network/mavsign/pkg/metrics"
+	"github.com/mavryk-network/mavsign/pkg/mavsign"
+	"github.com/mavryk-network/mavsign/pkg/mavsign/watermark"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -18,7 +19,7 @@ type Context struct {
 	Context context.Context
 
 	config    *config.Config
-	signatory *signatory.Signatory
+	mavsign *mavsign.MavSign
 }
 
 // NewRootCommand returns new root command
@@ -32,7 +33,7 @@ func NewRootCommand(c *Context, name string) *cobra.Command {
 
 	rootCmd := cobra.Command{
 		Use:   name,
-		Short: "A Tezos Remote Signer for signing block-chain operations with private keys",
+		Short: "A Mavryk Remote Signer for signing block-chain operations with private keys",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) (err error) {
 			if cmd.Use == "version" ||
 				strings.Contains(cmd.CommandPath(), "ledger") ||
@@ -49,11 +50,11 @@ func NewRootCommand(c *Context, name string) *cobra.Command {
 				}
 			}
 
-			if baseDir == "" {
-				baseDir = conf.BaseDir
+			if baseDir != "" {
+				conf.BaseDir = baseDir
 			}
-			baseDir = os.ExpandEnv(baseDir)
-			if err := os.MkdirAll(baseDir, 0770); err != nil {
+			conf.BaseDir = os.ExpandEnv(conf.BaseDir)
+			if err := os.MkdirAll(conf.BaseDir, 0770); err != nil {
 				return err
 			}
 
@@ -73,17 +74,17 @@ func NewRootCommand(c *Context, name string) *cobra.Command {
 
 			log.SetLevel(lv)
 
-			pol, err := signatory.PreparePolicy(conf.Tezos)
+			pol, err := mavsign.PreparePolicy(conf.Mavryk)
 			if err != nil {
 				return err
 			}
 
-			watermark, err := signatory.NewFileWatermark(baseDir)
+			watermark, err := watermark.Registry().New(cmd.Context(), conf.Watermark.Driver, &conf.Watermark.Config, conf)
 			if err != nil {
 				return err
 			}
 
-			sigConf := signatory.Config{
+			sigConf := mavsign.Config{
 				Policy:      pol,
 				Vaults:      conf.Vaults,
 				Interceptor: metrics.Interceptor,
@@ -91,7 +92,7 @@ func NewRootCommand(c *Context, name string) *cobra.Command {
 			}
 
 			if conf.PolicyHook != nil && conf.PolicyHook.Address != "" {
-				sigConf.PolicyHook = &signatory.PolicyHook{
+				sigConf.PolicyHook = &mavsign.PolicyHook{
 					Address: conf.PolicyHook.Address,
 				}
 				if conf.PolicyHook.AuthorizedKeys != nil {
@@ -103,7 +104,7 @@ func NewRootCommand(c *Context, name string) *cobra.Command {
 				}
 			}
 
-			sig, err := signatory.New(c.Context, &sigConf)
+			sig, err := mavsign.New(c.Context, &sigConf)
 			if err != nil {
 				return err
 			}
@@ -113,14 +114,14 @@ func NewRootCommand(c *Context, name string) *cobra.Command {
 			}
 
 			c.config = conf
-			c.signatory = sig
+			c.mavsign = sig
 			return nil
 		},
 	}
 
 	f := rootCmd.PersistentFlags()
 
-	f.StringVarP(&configFile, "config", "c", "/etc/signatory.yaml", "Config file path")
+	f.StringVarP(&configFile, "config", "c", "/etc/mavsign.yaml", "Config file path")
 	f.StringVar(&level, "log", "info", "Log level: [error, warn, info, debug, trace]")
 	f.StringVar(&baseDir, "base-dir", "", "Base directory. Takes priority over one specified in config")
 	f.BoolVar(&jsonLog, "json-log", false, "Use JSON structured logs")

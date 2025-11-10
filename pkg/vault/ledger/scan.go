@@ -7,16 +7,16 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/ecadlabs/gotez/v2/encoding"
-	"github.com/ecadlabs/signatory/pkg/vault/ledger/ledger"
-	"github.com/ecadlabs/signatory/pkg/vault/ledger/mnemonic"
-	"github.com/ecadlabs/signatory/pkg/vault/ledger/tezosapp"
+	"github.com/mavryk-network/mavbingo/v2/encoding"
+	"github.com/mavryk-network/mavsign/pkg/vault/ledger/ledger"
+	"github.com/mavryk-network/mavsign/pkg/vault/ledger/mnemonic"
+	"github.com/mavryk-network/mavsign/pkg/vault/ledger/mavrykapp"
 	log "github.com/sirupsen/logrus"
 )
 
 type deviceInfo struct {
 	Path    string
-	Version *tezosapp.Version
+	Version *mavrykapp.Version
 	ID      string
 	ShortID string
 }
@@ -26,14 +26,14 @@ type scanner struct {
 	tr  ledger.Transport
 }
 
-func (s *scanner) openPath(path string) (app *tezosapp.App, dev *deviceInfo, err error) {
+func (s *scanner) openPath(path string) (app *mavrykapp.App, dev *deviceInfo, err error) {
 	ex, err := s.tr.Open(path)
 	if err != nil {
 		return nil, nil, err
 	}
-	app = &tezosapp.App{Exchanger: ex}
+	app = &mavrykapp.App{Exchanger: ex}
 
-	defer func(a *tezosapp.App) {
+	defer func(a *mavrykapp.App) {
 		if err != nil {
 			a.Close()
 		}
@@ -44,7 +44,7 @@ func (s *scanner) openPath(path string) (app *tezosapp.App, dev *deviceInfo, err
 		return nil, nil, err
 	}
 
-	rootPK, err := app.GetPublicKey(tezosapp.DerivationED25519, tezosapp.TezosBIP32Root, false)
+	rootPK, err := app.GetPublicKey(mavrykapp.DerivationED25519, mavrykapp.MavrykBIP32Root, false)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -67,7 +67,7 @@ func (s *scanner) openPath(path string) (app *tezosapp.App, dev *deviceInfo, err
 	return app, dev, nil
 }
 
-func (s *scanner) open(id string) (*tezosapp.App, error) {
+func (s *scanner) open(id string) (*mavrykapp.App, error) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 

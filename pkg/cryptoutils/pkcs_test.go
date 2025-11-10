@@ -7,7 +7,7 @@ import (
 	"crypto/x509"
 	"testing"
 
-	"github.com/ecadlabs/gotez/v2/crypt"
+	"github.com/mavryk-network/mavbingo/v2/crypt"
 	"github.com/stretchr/testify/require"
 )
 

@@ -42,10 +42,10 @@ func AssertMetricsSuccessUnchanged(t *testing.T, before Metrics, after Metrics) 
 
 // this is the most simple test of metrics. metrics validation is also added to vault and operations/kinds tests
 func TestMetrics(t *testing.T) {
-	metrics0 := GetMetrics("tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb", "transaction", "generic", "File")
-	_, err := OctezClient("transfer", "1", "from", "alice", "to", "bob")
+	metrics0 := GetMetrics("mv1Hox9jGJg3uSmsv9NTvuK7rMHh25cq44nv", "transaction", "generic", "File")
+	_, err := MavkitClient("transfer", "1", "from", "alice", "to", "bob")
 	require.Nil(t, err)
-	metrics1 := GetMetrics("tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb", "transaction", "generic", "File")
+	metrics1 := GetMetrics("mv1Hox9jGJg3uSmsv9NTvuK7rMHh25cq44nv", "transaction", "generic", "File")
 	AssertMetricsSuccessIncremented(t, metrics0, metrics1, "generic")
 }
 

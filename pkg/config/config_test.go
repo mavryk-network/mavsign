@@ -3,9 +3,9 @@ package config
 import (
 	"testing"
 
-	"github.com/ecadlabs/gotez/v2/b58"
-	"github.com/ecadlabs/gotez/v2/crypt"
-	"github.com/ecadlabs/signatory/pkg/hashmap"
+	"github.com/mavryk-network/mavbingo/v2/b58"
+	"github.com/mavryk-network/mavbingo/v2/crypt"
+	"github.com/mavryk-network/mavsign/pkg/hashmap"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
@@ -30,7 +30,7 @@ var testCases = []testCase{
 	{
 		title: "Valid",
 		src: `---
-base_dir: $HOME/.signatory
+base_dir: $HOME/.mavsign
 server:
   address: :6732
   utility_address: :9583
@@ -39,14 +39,14 @@ vaults:
   kms:
     driver: cloudkms
     config:
-      project: signatory
+      project: mavsign
       location: europe-north1
       key_ring: hsm-ring
 
-tezos:
-  tz1Wz4ZabKRsz842Xuzy4a7CcWADfPVsPKus:
+mavryk:
+  mv19VEmW4zEELeQiBqLHH4RHgysYuLe4P6xt:
 
-  tz3MhmeqpudUqEX8PYTbNDF3CVcnnjNQoo8N:
+  mv3CXEtMtTwnnroNp3fxkWsBV1M5xP9uMCmm:
     log_payloads: true
     allow:
       generic:
@@ -56,7 +56,7 @@ tezos:
       endorsement:
 `,
 		expect: &Config{
-			BaseDir: "$HOME/.signatory",
+			BaseDir: "$HOME/.mavsign",
 			Server: ServerConfig{
 				Address:        ":6732",
 				UtilityAddress: ":9583",
@@ -78,7 +78,7 @@ tezos:
 							{
 								Kind:   8,
 								Tag:    "!!str",
-								Value:  "signatory",
+								Value:  "mavsign",
 								Line:   11,
 								Column: 16,
 							},
@@ -116,14 +116,14 @@ tezos:
 					},
 				},
 			},
-			Tezos: hashmap.NewPublicKeyHashMap([]hashmap.PublicKeyKV[*TezosPolicy]{
+			Mavryk: hashmap.NewPublicKeyHashMap([]hashmap.PublicKeyKV[*MavrykPolicy]{
 				{
-					Key: mustPKH("tz1Wz4ZabKRsz842Xuzy4a7CcWADfPVsPKus"),
+					Key: mustPKH("mv19VEmW4zEELeQiBqLHH4RHgysYuLe4P6xt"),
 					Val: nil,
 				},
 				{
-					Key: mustPKH("tz3MhmeqpudUqEX8PYTbNDF3CVcnnjNQoo8N"),
-					Val: &TezosPolicy{
+					Key: mustPKH("mv3CXEtMtTwnnroNp3fxkWsBV1M5xP9uMCmm"),
+					Val: &MavrykPolicy{
 						LogPayloads: true,
 						Allow: map[string][]string{
 							"generic":     {"transaction", "endorsement"},
@@ -138,7 +138,7 @@ tezos:
 	{
 		title: "InvalidBase58",
 		src: `---
-base_dir: $HOME/.signatory
+base_dir: $HOME/.mavsign
 server:
   address: :6732
   utility_address: :9583
@@ -147,19 +147,19 @@ vaults:
   kms:
     driver: cloudkms
     config:
-      project: signatory
+      project: mavsign
       location: europe-north1
       key_ring: hsm-ring
 
-tezos:
+mavryk:
   111111111111111111111111111111111111:
 `,
-		expectParseError: "gotez: base58Check decoding error: invalid checksum",
+		expectParseError: "mavbingo: base58Check decoding error: invalid checksum",
 	},
 	{
 		title: "InvalidType",
 		src: `---
-base_dir: $HOME/.signatory
+base_dir: $HOME/.mavsign
 server:
   address: :6732
   utility_address: :9583
@@ -168,14 +168,14 @@ vaults:
   kms:
     driver: cloudkms
     config:
-      project: signatory
+      project: mavsign
       location: europe-north1
       key_ring: hsm-ring
 
-tezos:
+mavryk:
   edpkv45regue1bWtuHnCgLU8xWKLwa9qRqv4gimgJKro4LSc3C5VjV:
 `,
-		expectParseError: "gotez: unknown public key prefix",
+		expectParseError: "mavbingo: unknown public key prefix",
 	},
 	{
 		title: "NoBaseDir",
@@ -188,14 +188,14 @@ vaults:
   kms:
     driver: cloudkms
     config:
-      project: signatory
+      project: mavsign
       location: europe-north1
       key_ring: hsm-ring
 
-tezos:
-  tz1Wz4ZabKRsz842Xuzy4a7CcWADfPVsPKus:
+mavryk:
+  mv19VEmW4zEELeQiBqLHH4RHgysYuLe4P6xt:
 
-  tz3MhmeqpudUqEX8PYTbNDF3CVcnnjNQoo8N:
+  mv3CXEtMtTwnnroNp3fxkWsBV1M5xP9uMCmm:
     log_payloads: true
     allow:
       generic:
@@ -226,7 +226,7 @@ tezos:
 							{
 								Kind:   8,
 								Tag:    "!!str",
-								Value:  "signatory",
+								Value:  "mavsign",
 								Line:   10,
 								Column: 16,
 							},
@@ -264,14 +264,14 @@ tezos:
 					},
 				},
 			},
-			Tezos: hashmap.NewPublicKeyHashMap([]hashmap.PublicKeyKV[*TezosPolicy]{
+			Mavryk: hashmap.NewPublicKeyHashMap([]hashmap.PublicKeyKV[*MavrykPolicy]{
 				{
-					Key: mustPKH("tz1Wz4ZabKRsz842Xuzy4a7CcWADfPVsPKus"),
+					Key: mustPKH("mv19VEmW4zEELeQiBqLHH4RHgysYuLe4P6xt"),
 					Val: nil,
 				},
 				{
-					Key: mustPKH("tz3MhmeqpudUqEX8PYTbNDF3CVcnnjNQoo8N"),
-					Val: &TezosPolicy{
+					Key: mustPKH("mv3CXEtMtTwnnroNp3fxkWsBV1M5xP9uMCmm"),
+					Val: &MavrykPolicy{
 						LogPayloads: true,
 						Allow: map[string][]string{
 							"generic":     {"transaction", "endorsement"},
@@ -287,7 +287,7 @@ tezos:
 	{
 		title: "InvalidAddress",
 		src: `---
-base_dir: $HOME/.signatory
+base_dir: $HOME/.mavsign
 server:
   address: xxxx
   utility_address: :9583
@@ -296,14 +296,14 @@ vaults:
   kms:
     driver: cloudkms
     config:
-      project: signatory
+      project: mavsign
       location: europe-north1
       key_ring: hsm-ring
 
-tezos:
-  tz1Wz4ZabKRsz842Xuzy4a7CcWADfPVsPKus:
+mavryk:
+  mv19VEmW4zEELeQiBqLHH4RHgysYuLe4P6xt:
 
-  tz3MhmeqpudUqEX8PYTbNDF3CVcnnjNQoo8N:
+  mv3CXEtMtTwnnroNp3fxkWsBV1M5xP9uMCmm:
     log_payloads: true
     allow:
       generic:
@@ -313,7 +313,7 @@ tezos:
       endorsement:
 `,
 		expect: &Config{
-			BaseDir: "$HOME/.signatory",
+			BaseDir: "$HOME/.mavsign",
 			Server: ServerConfig{
 				Address:        "xxxx",
 				UtilityAddress: ":9583",
@@ -335,7 +335,7 @@ tezos:
 							{
 								Kind:   8,
 								Tag:    "!!str",
-								Value:  "signatory",
+								Value:  "mavsign",
 								Line:   11,
 								Column: 16,
 							},
@@ -373,14 +373,14 @@ tezos:
 					},
 				},
 			},
-			Tezos: hashmap.NewPublicKeyHashMap([]hashmap.PublicKeyKV[*TezosPolicy]{
+			Mavryk: hashmap.NewPublicKeyHashMap([]hashmap.PublicKeyKV[*MavrykPolicy]{
 				{
-					Key: mustPKH("tz1Wz4ZabKRsz842Xuzy4a7CcWADfPVsPKus"),
+					Key: mustPKH("mv19VEmW4zEELeQiBqLHH4RHgysYuLe4P6xt"),
 					Val: nil,
 				},
 				{
-					Key: mustPKH("tz3MhmeqpudUqEX8PYTbNDF3CVcnnjNQoo8N"),
-					Val: &TezosPolicy{
+					Key: mustPKH("mv3CXEtMtTwnnroNp3fxkWsBV1M5xP9uMCmm"),
+					Val: &MavrykPolicy{
 						LogPayloads: true,
 						Allow: map[string][]string{
 							"generic":     {"transaction", "endorsement"},
@@ -396,7 +396,7 @@ tezos:
 	{
 		title: "EmptyVaultData",
 		src: `---
-base_dir: $HOME/.signatory
+base_dir: $HOME/.mavsign
 server:
   address: :6732
   utility_address: :9583
@@ -404,10 +404,10 @@ server:
 vaults:
   kms:
 
-tezos:
-  tz1Wz4ZabKRsz842Xuzy4a7CcWADfPVsPKus:
+mavryk:
+  mv19VEmW4zEELeQiBqLHH4RHgysYuLe4P6xt:
 
-  tz3MhmeqpudUqEX8PYTbNDF3CVcnnjNQoo8N:
+  mv3CXEtMtTwnnroNp3fxkWsBV1M5xP9uMCmm:
     log_payloads: true
     allow:
       generic:
@@ -417,7 +417,7 @@ tezos:
       endorsement:
 `,
 		expect: &Config{
-			BaseDir: "$HOME/.signatory",
+			BaseDir: "$HOME/.mavsign",
 			Server: ServerConfig{
 				Address:        ":6732",
 				UtilityAddress: ":9583",
@@ -425,14 +425,14 @@ tezos:
 			Vaults: map[string]*VaultConfig{
 				"kms": nil,
 			},
-			Tezos: hashmap.NewPublicKeyHashMap([]hashmap.PublicKeyKV[*TezosPolicy]{
+			Mavryk: hashmap.NewPublicKeyHashMap([]hashmap.PublicKeyKV[*MavrykPolicy]{
 				{
-					Key: mustPKH("tz1Wz4ZabKRsz842Xuzy4a7CcWADfPVsPKus"),
+					Key: mustPKH("mv19VEmW4zEELeQiBqLHH4RHgysYuLe4P6xt"),
 					Val: nil,
 				},
 				{
-					Key: mustPKH("tz3MhmeqpudUqEX8PYTbNDF3CVcnnjNQoo8N"),
-					Val: &TezosPolicy{
+					Key: mustPKH("mv3CXEtMtTwnnroNp3fxkWsBV1M5xP9uMCmm"),
+					Val: &MavrykPolicy{
 						LogPayloads: true,
 						Allow: map[string][]string{
 							"generic":     {"transaction", "endorsement"},

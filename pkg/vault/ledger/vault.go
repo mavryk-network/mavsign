@@ -3,17 +3,16 @@ package ledger
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
-	"github.com/ecadlabs/gotez/v2/crypt"
-	"github.com/ecadlabs/signatory/pkg/config"
-	"github.com/ecadlabs/signatory/pkg/errors"
-	"github.com/ecadlabs/signatory/pkg/vault"
-	"github.com/ecadlabs/signatory/pkg/vault/ledger/ledger"
-	"github.com/ecadlabs/signatory/pkg/vault/ledger/tezosapp"
+	"github.com/mavryk-network/mavbingo/v2/crypt"
+	"github.com/mavryk-network/mavsign/pkg/config"
+	"github.com/mavryk-network/mavsign/pkg/errors"
+	"github.com/mavryk-network/mavsign/pkg/vault"
+	"github.com/mavryk-network/mavsign/pkg/vault/ledger/ledger"
+	"github.com/mavryk-network/mavsign/pkg/vault/ledger/mavrykapp"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
@@ -43,8 +42,8 @@ type signReq struct {
 func (s *signReq) devRequest() {}
 
 type keyID struct {
-	path tezosapp.BIP32
-	dt   tezosapp.DerivationType
+	path mavrykapp.BIP32
+	dt   mavrykapp.DerivationType
 }
 
 // Vault is a Ledger signer backend
@@ -66,10 +65,33 @@ type Config struct {
 type ledgerKey struct {
 	id  *keyID
 	pub crypt.PublicKey
+	v   *Vault
 }
 
 func (l *ledgerKey) PublicKey() crypt.PublicKey { return l.pub }
 func (l *ledgerKey) ID() string                 { return l.id.String() }
+func (l *ledgerKey) Vault() vault.Vault         { return l.v }
+
+func (key *ledgerKey) Sign(ctx context.Context, digest []byte) (crypt.Signature, error) {
+	res := make(chan crypt.Signature, 1)
+	errCh := make(chan error, 1)
+
+	key.v.req <- &signReq{
+		key:  key.id,
+		data: digest,
+		sig:  res,
+		err:  errCh,
+	}
+
+	select {
+	case pk := <-res:
+		return pk, nil
+	case err := <-errCh:
+		return nil, fmt.Errorf("(Ledger/%s): %w", key.v.config.ID, err)
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
+}
 
 type ledgerIterator struct {
 	ctx context.Context
@@ -77,7 +99,7 @@ type ledgerIterator struct {
 	idx int
 }
 
-func (l *ledgerIterator) Next() (key vault.StoredKey, err error) {
+func (l *ledgerIterator) Next() (key vault.KeyReference, err error) {
 	if l.idx == len(l.v.keys) {
 		return nil, vault.ErrDone
 	}
@@ -91,7 +113,7 @@ func (l *ledgerIterator) Next() (key vault.StoredKey, err error) {
 	return pk, nil
 }
 
-func (v *Vault) getPublicKey(ctx context.Context, id *keyID) (vault.StoredKey, error) {
+func (v *Vault) getPublicKey(ctx context.Context, id *keyID) (*ledgerKey, error) {
 	res := make(chan *ledgerKey, 1)
 	errCh := make(chan error, 1)
 
@@ -111,62 +133,24 @@ func (v *Vault) getPublicKey(ctx context.Context, id *keyID) (vault.StoredKey, e
 	}
 }
 
-// GetPublicKey returns a public key by given ID
-func (v *Vault) GetPublicKey(ctx context.Context, id string) (vault.StoredKey, error) {
-	key, err := parseKeyID(id)
-	if err != nil {
-		return nil, errors.Wrap(fmt.Errorf("(Ledger/%s): %w", v.config.ID, err), http.StatusBadRequest)
-	}
-	return v.getPublicKey(ctx, key)
-}
-
-// ListPublicKeys returns a list of keys stored under the backend
-func (v *Vault) ListPublicKeys(ctx context.Context) vault.StoredKeysIterator {
+// List returns a list of keys stored under the backend
+func (v *Vault) List(ctx context.Context) vault.KeyIterator {
 	return &ledgerIterator{
 		ctx: ctx,
 		v:   v,
 	}
 }
 
-func (v *Vault) SignMessage(ctx context.Context, digest []byte, key vault.StoredKey) (crypt.Signature, error) {
-	pk, ok := key.(*ledgerKey)
-	if !ok {
-		return nil, errors.Wrap(fmt.Errorf("(Ledger/%s): not a Ledger key: %T ", v.config.ID, key), http.StatusBadRequest)
-	}
-
-	res := make(chan crypt.Signature, 1)
-	errCh := make(chan error, 1)
-
-	v.req <- &signReq{
-		key:  pk.id,
-		data: digest,
-		sig:  res,
-		err:  errCh,
-	}
-
-	select {
-	case pk := <-res:
-		return pk, nil
-	case err := <-errCh:
-		return nil, fmt.Errorf("(Ledger/%s): %w", v.config.ID, err)
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	}
-}
-
 // Name returns a backend name i.e. Ledger
 func (v *Vault) Name() string {
-	return "Ledger"
+	return fmt.Sprintf("Ledger/%s", v.config.ID)
 }
 
-// VaultName returns an instance ID
-func (v *Vault) VaultName() string {
-	return v.config.ID
-}
+func (v *Vault) Close(context.Context) error { return nil }
 
 func (v *Vault) worker() {
 	var (
-		dev *tezosapp.App
+		dev *mavrykapp.App
 		err error
 		t   *time.Timer
 		tch <-chan time.Time
@@ -218,6 +202,7 @@ func (v *Vault) worker() {
 				r.res <- &ledgerKey{
 					pub: pub,
 					id:  r.key,
+					v:   v,
 				}
 
 			case *signReq:
@@ -288,22 +273,22 @@ func parseKeyID(s string) (*keyID, error) {
 		return nil, fmt.Errorf("error parsing key id: %s", s)
 	}
 
-	dt, err := tezosapp.DerivationTypeFromString(p[0])
+	dt, err := mavrykapp.DerivationTypeFromString(p[0])
 	if err != nil {
 		return nil, err
 	}
 
-	path := tezosapp.ParseBIP32(p[1])
+	path := mavrykapp.ParseBIP32(p[1])
 	if path == nil {
 		return nil, fmt.Errorf("error parsing key path: %s", p[1])
 	}
 	for _, p := range path {
-		if p&tezosapp.BIP32H == 0 {
+		if p&mavrykapp.BIP32H == 0 {
 			return nil, errors.New("only hardened derivation is supported")
 		}
 	}
-	if len(path) < 2 || path[0] != tezosapp.TezosBIP32Root[0] || path[1] != tezosapp.TezosBIP32Root[1] {
-		path = append(tezosapp.TezosBIP32Root, path...)
+	if len(path) < 2 || path[0] != mavrykapp.MavrykBIP32Root[0] || path[1] != mavrykapp.MavrykBIP32Root[1] {
+		path = append(mavrykapp.MavrykBIP32Root, path...)
 	}
 	if len(path) == 2 {
 		return nil, errors.New("root key isn't allowed to use")

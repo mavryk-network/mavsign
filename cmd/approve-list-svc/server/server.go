@@ -6,8 +6,8 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/ecadlabs/gotez/v2/crypt"
-	"github.com/ecadlabs/signatory/pkg/signatory"
+	"github.com/mavryk-network/mavbingo/v2/crypt"
+	"github.com/mavryk-network/mavsign/pkg/mavsign"
 )
 
 type Server struct {
@@ -20,7 +20,7 @@ type Server struct {
 func (s *Server) Handler() (http.Handler, error) {
 	pub := s.PrivateKey.Public()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var req signatory.PolicyHookRequest
+		var req mavsign.PolicyHookRequest
 		dec := json.NewDecoder(r.Body)
 		if err := dec.Decode(&req); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -51,7 +51,7 @@ func (s *Server) Handler() (http.Handler, error) {
 				status = http.StatusForbidden
 			}
 
-			replyPl := signatory.PolicyHookReplyPayload{
+			replyPl := mavsign.PolicyHookReplyPayload{
 				Status:        status,
 				PublicKeyHash: pub.Hash().String(),
 				Nonce:         req.Nonce,
@@ -73,7 +73,7 @@ func (s *Server) Handler() (http.Handler, error) {
 				return
 			}
 
-			reply := signatory.PolicyHookReply{
+			reply := mavsign.PolicyHookReply{
 				Payload:   buf,
 				Signature: sig.String(),
 			}

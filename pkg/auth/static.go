@@ -3,9 +3,9 @@ package auth
 import (
 	"context"
 
-	tz "github.com/ecadlabs/gotez/v2"
-	"github.com/ecadlabs/gotez/v2/crypt"
-	"github.com/ecadlabs/signatory/pkg/hashmap"
+	mv "github.com/mavryk-network/mavbingo/v2"
+	"github.com/mavryk-network/mavbingo/v2/crypt"
+	"github.com/mavryk-network/mavsign/pkg/hashmap"
 )
 
 type authorizedKeys = hashmap.PublicKeyHashMap[crypt.PublicKey]
@@ -42,7 +42,7 @@ func StaticAuthorizedKeys(pub ...crypt.PublicKey) (AuthorizedKeysStorage, error)
 }
 
 // StaticAuthorizedKeysFromRaw returns an AuthorizedKeysStorage that uses the given public keys
-func StaticAuthorizedKeysFromRaw(pub ...tz.PublicKey) (AuthorizedKeysStorage, error) {
+func StaticAuthorizedKeysFromRaw(pub ...mv.PublicKey) (AuthorizedKeysStorage, error) {
 	idx := make(authorizedKeys)
 	keys := make([]crypt.PublicKeyHash, len(pub))
 	for i, k := range pub {

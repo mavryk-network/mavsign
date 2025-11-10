@@ -1,15 +1,15 @@
 package ledger
 
 import (
-	"github.com/ecadlabs/gotez/v2"
-	"github.com/ecadlabs/gotez/v2/b58"
-	"github.com/ecadlabs/signatory/pkg/vault/ledger/tezosapp"
+	"github.com/mavryk-network/mavbingo/v2"
+	"github.com/mavryk-network/mavbingo/v2/b58"
+	"github.com/mavryk-network/mavsign/pkg/vault/ledger/mavrykapp"
 )
 
 // Utility functions used by CLI
 
 func SetupBaking(transport string, id, keyID, chainID string, mainHWM, testHWM uint32) (pkh string, err error) {
-	var hwm tezosapp.HWM
+	var hwm mavrykapp.HWM
 	if chainID != "" {
 		cid, err := b58.ParseChainID([]byte(chainID))
 		if err != nil {
@@ -95,5 +95,5 @@ func GetHighWatermarks(transport string, id string) (mainHWM, testHWM uint32, ch
 	if err != nil {
 		return
 	}
-	return hwm.Main, hwm.Test, gotez.ChainID(hwm.ChainID).String(), nil
+	return hwm.Main, hwm.Test, mavbingo.ChainID(hwm.ChainID).String(), nil
 }

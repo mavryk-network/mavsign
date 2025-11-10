@@ -5,8 +5,8 @@ title: GCPKMS
 
 # **Google Cloud Platform configuration**
 
-Create a new project or use an existing project and the service accounts used with Signatory should have the following permissions. It may be achieved by using custom roles (see [https://console.cloud.google.com/iam-admin/roles](https://console.cloud.google.com/iam-admin/roles)) \
-Project name is required in the signatory config.
+Create a new project or use an existing project and the service accounts used with MavSign should have the following permissions. It may be achieved by using custom roles (see [https://console.cloud.google.com/iam-admin/roles](https://console.cloud.google.com/iam-admin/roles)) \
+Project name is required in the mavsign config.
 
 ## **Basic permissions**
 
@@ -31,7 +31,7 @@ Project name is required in the signatory config.
 
 ## **Configuration parameters**
 
-Below are the configuration fields which are required for Signatory.
+Below are the configuration fields which are required for MavSign.
 
 |||||
 |--- |--- |--- |--- |
@@ -46,7 +46,7 @@ Below are the configuration fields which are required for Signatory.
 
 Under `key management` create a new `key-ring` with any location and create a key with `purpose` as `Asymmetric-sign` and `protection level` as `HSM`.
 
-The key-ring name and location are required in the signatory configuration.
+The key-ring name and location are required in the mavsign configuration.
 
 - Key rings can be found in the security section of your GCP project (Security -> Key Management)
 - When creating the key a few things are important:
@@ -54,7 +54,7 @@ The key-ring name and location are required in the signatory configuration.
 
 ## **Application Access:**
 
-Providing Signatory with the permissions to access GCP KMS will differ depending on whether or not Signatory is running inside or outside of GCP.
+Providing MavSign with the permissions to access GCP KMS will differ depending on whether or not MavSign is running inside or outside of GCP.
 One thing that each method has in common is creation of the IAM Service Account:
 
 * Select `IAM & ADMIN` from the menu and select `Service accounts`. Create a new service account or use an existing one with all the above permissions (Get, Sign & Import) granted.
@@ -62,19 +62,19 @@ One thing that each method has in common is creation of the IAM Service Account:
 ### **Authenticating with the Service Account from outside GCP:**
 
 * Select the created/existing service account and within that create a new key and a prompt to download the application credentials will appear, select the JSON format.
-* The downloaded JSON file is needed in signatory config or can be assigned to the below environment variable.
+* The downloaded JSON file is needed in mavsign config or can be assigned to the below environment variable.
 
 ```sh
-export GOOGLE_APPLICATION_CREDENTIALS="signatory-testing-a7sdfew625aecb.json"
+export GOOGLE_APPLICATION_CREDENTIALS="mavsign-testing-a7sdfew625aecb.json"
 ```
 
 ### **Authenticating with the Service Account from GCP VM:**
 
-Do not download the service account credentials and place them on Signatory's file system, and do not use `GOOGLE_APPLICATION_CREDENTIALS` env var. Instead, edit the VM specifications for `Identity and API access` such that it selects the IAM Service Account.
+Do not download the service account credentials and place them on MavSign's file system, and do not use `GOOGLE_APPLICATION_CREDENTIALS` env var. Instead, edit the VM specifications for `Identity and API access` such that it selects the IAM Service Account.
 
 ### **Authenticating with the Service Account from GKE pod:**
 
-Do not download the service account credentials and place them on Signatory's file system, and do not use `GOOGLE_APPLICATION_CREDENTIALS` env var. Best practice is to [use Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)  In short:
+Do not download the service account credentials and place them on MavSign's file system, and do not use `GOOGLE_APPLICATION_CREDENTIALS` env var. Best practice is to [use Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)  In short:
 
 * enable Workload Identity on the cluster
 * create a kubernetes Service Account and bind it to the IAM Service Account
@@ -84,15 +84,15 @@ Do not download the service account credentials and place them on Signatory's fi
 ## **Getting a PKH**
 
 ```sh
-signatory % ./signatory-cli list -c /etc/s.yaml
+mavsign % ./mavsign-cli list -c /etc/s.yaml
 Public Key Hash:    tz3fK7rVYSg2HTEAmUYdfjJWSDGfsKrxH3xQ
 Vault:              CloudKMS
-ID:                 projects/signatory-testing/locations/europe-north1/keyRings/sigy-key/cryptoKeys/sigyhsm/cryptoKeyVersions/4
+ID:                 projects/mavsign-testing/locations/europe-north1/keyRings/sigy-key/cryptoKeys/sigyhsm/cryptoKeyVersions/4
 Status:             FOUND_NOT_CONFIGURED
 *DISABLED*
 ```
 
-**Update signatory.yaml config with the PKH:**
+**Update mavsign.yaml config with the PKH:**
 
 ```yaml
 server:
@@ -107,7 +107,7 @@ vaults:
       location: <gcp_region>
       key_ring: <key_ring_name>
       application_credentials: <credentials_file_path>
-tezos:
+mavryk:
   tz3fK7rVYSg2HTEAmUYdfjJWSDGfsKrxH3xQ:
     log_payloads: true
     allow:
@@ -120,18 +120,18 @@ tezos:
 
 ## **Key Import:**
 
-Users can generate a private key in an air gap environment and then import it into GCP Key Management using `signatory-cli` binary. Below are the steps to do that.
+Users can generate a private key in an air gap environment and then import it into GCP Key Management using `mavsign-cli` binary. Below are the steps to do that.
 
-1. Build `signatory-cli` binary using `make signatory-cli`. You need `Golang version 1.15` or later.
+1. Build `mavsign-cli` binary using `make mavsign-cli`. You need `Golang version 1.15` or later.
 
-2. Use the below command to import the generated private into GCP Key Management. Only `Elliptic Curve P-256 - SHA256` `Digest` is supported now. Below sample key is taken from `signatory/docs/yubihsm.md`
+2. Use the below command to import the generated private into GCP Key Management. Only `Elliptic Curve P-256 - SHA256` `Digest` is supported now. Below sample key is taken from `mavsign/docs/yubihsm.md`
 
 ```sh
-% ./signatory-cli import -c signatory.yaml --vault kms
+% ./mavsign-cli import -c mavsign.yaml --vault kms
 
 INFO[0000] Initializing vault                            vault=cloudkms vault_name=kms
 Enter secret key: 
 Enter Password: 
-Enter Password: INFO[0002] Requesting import operation                   pkh=tz3be5v4ZWL3zQYUZoLWJQy8P3H6RJryVVXn vault=CloudKMS vault_name=projects/signatory-testing/locations/europe-north1/keyRings/sign-ring
-INFO[0008] Successfully imported                         key_id=projects/signatory-testing/locations/europe-north1/keyRings/sign-ring/cryptoKeys/signatory-imported-215FwcXxhLdlr9IYwzA31vwANmy/cryptoKeyVersions/1 pkh=tz3be5v4ZWL3zQYUZoLWJQy8P3H6RJryVVXn vault=CloudKMS vault_name=projects/signatory-testing/locations/europe-north1/keyRings/sign-ring
+Enter Password: INFO[0002] Requesting import operation                   pkh=tz3be5v4ZWL3zQYUZoLWJQy8P3H6RJryVVXn vault=CloudKMS vault_name=projects/mavsign-testing/locations/europe-north1/keyRings/sign-ring
+INFO[0008] Successfully imported                         key_id=projects/mavsign-testing/locations/europe-north1/keyRings/sign-ring/cryptoKeys/mavsign-imported-215FwcXxhLdlr9IYwzA31vwANmy/cryptoKeyVersions/1 pkh=tz3be5v4ZWL3zQYUZoLWJQy8P3H6RJryVVXn vault=CloudKMS vault_name=projects/mavsign-testing/locations/europe-north1/keyRings/sign-ring
 ```

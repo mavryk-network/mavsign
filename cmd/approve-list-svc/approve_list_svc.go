@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ecadlabs/signatory/cmd/approve-list-svc/server"
+	"github.com/mavryk-network/mavsign/cmd/approve-list-svc/server"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

@@ -7,8 +7,8 @@ import (
 	"net"
 	"os"
 
-	"github.com/ecadlabs/gotez/v2/crypt"
-	"github.com/ecadlabs/signatory/pkg/cryptoutils"
+	"github.com/mavryk-network/mavbingo/v2/crypt"
+	"github.com/mavryk-network/mavsign/pkg/cryptoutils"
 	yaml "gopkg.in/yaml.v3"
 )
 

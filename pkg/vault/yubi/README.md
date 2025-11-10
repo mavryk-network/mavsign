@@ -2,9 +2,9 @@
 
 ## YubiHSM 2 setup
 
-The goal of this guide is to configure Signatory to use a Yubi HSM 2 as a signing backend. We will also show how to generate a new key inside the YubiHSM 2 and use it with signatory.
+The goal of this guide is to configure MavSign to use a Yubi HSM 2 as a signing backend. We will also show how to generate a new key inside the YubiHSM 2 and use it with mavsign.
 
-To setup Yubi HSM 2 as a signing backend for Signatory, you will need:
+To setup Yubi HSM 2 as a signing backend for MavSign, you will need:
 
 * A Yubi HSM 2 device
 * A machine with the Yubi SDK installed on it https://developers.yubico.com/YubiHSM2/Releases

@@ -1,11 +1,11 @@
 module.exports = {
-	title: 'Signatory - A Tezos Remote Signer',
-	tagline: 'Signatory signs your Tezos Ops while protecting your private keys',
-	url: 'https://signatory.io',
+	title: 'MavSign - A Mavryk Remote Signer',
+	tagline: 'MavSign signs your Mavryk Ops while protecting your private keys',
+	url: 'https://mavsign.mavryk.org',
 	baseUrl: '/',
 	favicon: 'img/favicon.svg',
 	organizationName: 'ecadlabs', // Usually your GitHub org/user name.
-	projectName: 'signatory', // Usually your repo name.
+	projectName: 'mavsign', // Usually your repo name.
 	onBrokenLinks: 'warn',
 	markdown: {
 		mermaid: true,
@@ -38,7 +38,7 @@ module.exports = {
 		navbar: {
 			// hideOnScroll: true,
 			logo: {
-				alt: 'Signatory Signer for Tezos',
+				alt: 'MavSign Signer for Mavryk',
 				src: 'img/header-logo.svg',
 			},
 			items: [
@@ -50,7 +50,7 @@ module.exports = {
 					className: 'header-link button_link',
 				},
 				{
-					href: 'https://github.com/ecadlabs/signatory',
+					href: 'https://github.com/mavryk-network/mavsign',
 					position: 'right',
 					className: 'header-link header-github-link',
 					'aria-label': 'GitHub repository',
@@ -64,11 +64,11 @@ module.exports = {
 					items: [
 						{
 							label: 'Report Issues',
-							to: 'https://github.com/ecadlabs/signatory/issues/new/choose',
+							to: 'https://github.com/mavryk-network/mavsign/issues/new/choose',
 						},
 						{
 							label: 'Contribute',
-							to: 'https://github.com/ecadlabs/signatory/blob/main/README.md',
+							to: 'https://github.com/mavryk-network/mavsign/blob/main/README.md',
 						},
 					],
 				},
@@ -82,15 +82,15 @@ module.exports = {
 						},
 						{
 							label: 'Twitter',
-							to: 'https://twitter.com/signatoryio',
+							to: 'https://twitter.com/mavsignio',
 						},
 						{
 							label: 'Code of Conduct',
-							to: 'https://github.com/ecadlabs/signatory/blob/main/CODE_OF_CONDUCT.md',
+							to: 'https://github.com/mavryk-network/mavsign/blob/main/CODE_OF_CONDUCT.md',
 						},
 						{
 							label: 'GitHub',
-							to: 'https://github.com/ecadlabs/signatory',
+							to: 'https://github.com/mavryk-network/mavsign',
 						},
 					],
 				},
@@ -111,13 +111,13 @@ module.exports = {
 						{
 							html: `
 									<p class='footerDescription'>
-										A Tezos Remote Signer
+										A Mavryk Remote Signer
 									</p>
 								  `,
 						},
 						{
 							html: `
-									<a class='footerButton' href='https://github.com/ecadlabs/signatory'>
+									<a class='footerButton' href='https://github.com/mavryk-network/mavsign'>
 										GITHUB
 									</a>
 								  `,
@@ -137,7 +137,7 @@ module.exports = {
 				docs: {
 					path: '../docs',
 					sidebarPath: require.resolve('./sidebars.js'),
-					editUrl: 'https://github.com/ecadlabs/signatory/edit/master/website/',
+					editUrl: 'https://github.com/mavryk-network/mavsign/edit/master/website/',
 				},
 				theme: {
 					customCss: [

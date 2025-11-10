@@ -4,9 +4,9 @@ import (
 	"errors"
 	"os"
 
-	"github.com/ecadlabs/gotez/v2/crypt"
-	"github.com/ecadlabs/signatory/pkg/hashmap"
-	"github.com/ecadlabs/signatory/pkg/middlewares"
+	"github.com/mavryk-network/mavbingo/v2/crypt"
+	"github.com/mavryk-network/mavsign/pkg/hashmap"
+	"github.com/mavryk-network/mavsign/pkg/middlewares"
 	"github.com/go-playground/validator/v10"
 	yaml "gopkg.in/yaml.v3"
 )
@@ -17,7 +17,7 @@ type PolicyHook struct {
 	AuthorizedKeys *AuthorizedKeys `yaml:"authorized_keys"`
 }
 
-// ServerConfig contains the information necessary to the tezos signing server
+// ServerConfig contains the information necessary to the mavryk signing server
 type ServerConfig struct {
 	Address        string           `yaml:"address" validate:"hostname_port"`
 	UtilityAddress string           `yaml:"utility_address" validate:"hostname_port"`
@@ -25,11 +25,11 @@ type ServerConfig struct {
 	JWTConfig      *middlewares.JWT `yaml:"jwt"`
 }
 
-// TezosConfig contains the configuration related to tezos network
-type TezosConfig = hashmap.PublicKeyHashMap[*TezosPolicy]
+// MavrykConfig contains the configuration related to mavryk network
+type MavrykConfig = hashmap.PublicKeyHashMap[*MavrykPolicy]
 
-// TezosPolicy contains policy definition for a specific address
-type TezosPolicy struct {
+// MavrykPolicy contains policy definition for a specific address
+type MavrykPolicy struct {
 	Allow             map[string][]string `yaml:"allow"`
 	AllowedOperations []string            `yaml:"allowed_operations"`
 	AllowedKinds      []string            `yaml:"allowed_kinds"`
@@ -44,13 +44,20 @@ type VaultConfig struct {
 	Config yaml.Node `yaml:"config"`
 }
 
-// Config contains all the configuration necessary to run the signatory
+// Config contains all the configuration necessary to run the mavsign
 type Config struct {
 	Vaults     map[string]*VaultConfig `yaml:"vaults" validate:"dive,required"`
-	Tezos      TezosConfig             `yaml:"tezos"`
+	Mavryk      MavrykConfig             `yaml:"mavryk"`
 	Server     ServerConfig            `yaml:"server"`
 	PolicyHook *PolicyHook             `yaml:"policy_hook"`
 	BaseDir    string                  `yaml:"base_dir" validate:"required"`
+	Watermark  *WatermarkConfig        `yaml:"watermark"`
+}
+
+// WatermarkConfig represents watermark backend configuration
+type WatermarkConfig struct {
+	Driver string    `yaml:"driver" validate:"required"`
+	Config yaml.Node `yaml:"config"`
 }
 
 var defaultConfig = Config{
@@ -58,7 +65,10 @@ var defaultConfig = Config{
 		Address:        ":6732",
 		UtilityAddress: ":9583",
 	},
-	BaseDir: "/var/lib/signatory",
+	BaseDir: "/var/lib/mavsign",
+	Watermark: &WatermarkConfig{
+		Driver: "file",
+	},
 }
 
 // Read read the config from a file

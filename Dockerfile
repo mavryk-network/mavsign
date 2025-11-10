@@ -1,17 +1,17 @@
-FROM golang:1.21-bullseye AS builder
-RUN apt-get update && apt-get install
-ADD . /signatory
-WORKDIR /signatory
+FROM golang:1.24-bullseye AS builder
+RUN apt-get update && apt-get install -y make
+ADD . /mavsign
+WORKDIR /mavsign
 RUN make
 
-FROM debian:buster-slim
-WORKDIR /signatory
+FROM debian:bullseye-slim
+WORKDIR /mavsign
 RUN apt update -y \
     && apt install -y curl apt-transport-https\
     && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /signatory/signatory.yaml /signatory/signatory.yaml
-COPY --from=builder /signatory/signatory /usr/bin/signatory
-COPY --from=builder /signatory/signatory-cli /usr/bin/signatory-cli
+COPY --from=builder /mavsign/mavsign.yaml /mavsign/mavsign.yaml
+COPY --from=builder /mavsign/mavsign /usr/bin/mavsign
+COPY --from=builder /mavsign/mavsign-cli /usr/bin/mavsign-cli
 
-ENTRYPOINT ["/usr/bin/signatory"]
-CMD [ "-c", "/signatory/signatory.yaml" ]
+ENTRYPOINT ["/usr/bin/mavsign"]
+CMD [ "-c", "/mavsign/mavsign.yaml" ]

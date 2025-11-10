@@ -9,14 +9,15 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/ecadlabs/gotez/v2/crypt"
-	"github.com/ecadlabs/signatory/cmd/approve-list-svc/server"
-	"github.com/ecadlabs/signatory/pkg/auth"
-	"github.com/ecadlabs/signatory/pkg/config"
-	"github.com/ecadlabs/signatory/pkg/hashmap"
-	"github.com/ecadlabs/signatory/pkg/signatory"
-	"github.com/ecadlabs/signatory/pkg/vault"
-	"github.com/ecadlabs/signatory/pkg/vault/memory"
+	"github.com/mavryk-network/mavbingo/v2/crypt"
+	"github.com/mavryk-network/mavsign/cmd/approve-list-svc/server"
+	"github.com/mavryk-network/mavsign/pkg/auth"
+	"github.com/mavryk-network/mavsign/pkg/config"
+	"github.com/mavryk-network/mavsign/pkg/hashmap"
+	"github.com/mavryk-network/mavsign/pkg/mavsign"
+	"github.com/mavryk-network/mavsign/pkg/mavsign/watermark"
+	"github.com/mavryk-network/mavsign/pkg/vault"
+	"github.com/mavryk-network/mavsign/pkg/vault/memory"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
@@ -55,33 +56,33 @@ func testServer(t *testing.T, addr []net.IP) error {
 	signKeyHash := signPub.Hash()
 	require.NoError(t, err)
 
-	conf := signatory.Config{
+	conf := mavsign.Config{
 		Vaults:    map[string]*config.VaultConfig{"mock": {Driver: "mock"}},
-		Watermark: signatory.IgnoreWatermark{},
+		Watermark: watermark.Ignore{},
 		VaultFactory: vault.FactoryFunc(func(ctx context.Context, name string, conf *yaml.Node) (vault.Vault, error) {
 			return memory.New([]*memory.PrivateKey{
 				{
-					PrivateKey: signPriv,
+					Key: signPriv,
 				},
 			}, "Mock")
 		}),
-		Policy: hashmap.NewPublicKeyHashMap([]hashmap.PublicKeyKV[*signatory.PublicKeyPolicy]{
+		Policy: hashmap.NewPublicKeyHashMap([]hashmap.PublicKeyKV[*mavsign.PublicKeyPolicy]{
 			{
 				Key: signKeyHash,
 				Val: nil,
 			},
 		}),
-		PolicyHook: &signatory.PolicyHook{
+		PolicyHook: &mavsign.PolicyHook{
 			Address: testSrv.URL,
 			Auth:    hookAuth,
 		},
 	}
 
-	s, err := signatory.New(context.Background(), &conf)
+	s, err := mavsign.New(context.Background(), &conf)
 	require.NoError(t, err)
 
 	msg, _ := hex.DecodeString("11ed9d217c0000518e0118425847ac255b6d7c30ce8fec23b8eaf13b741de7d18509ac2ef83c741209630000000061947af504805682ea5d089837764b3efcc90b91db24294ff9ddb66019f332ccba17cc4741000000210000000102000000040000518e0000000000000004ffffffff0000000400000000eb1320a71e8bf8b0162a3ec315461e9153a38b70d00d5dde2df85eb92748f8d068d776e356683a9e23c186ccfb72ddc6c9857bb1704487972922e7c89a7121f800000000a8e1dd3c000000000000")
-	_, err = s.Sign(context.Background(), &signatory.SignRequest{PublicKeyHash: signKeyHash, Message: msg, Source: net.IPv6loopback})
+	_, err = s.Sign(context.Background(), &mavsign.SignRequest{PublicKeyHash: signKeyHash, Message: msg, Source: net.IPv6loopback})
 	return err
 }
 

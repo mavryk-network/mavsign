@@ -11,7 +11,7 @@ import (
 
 var speculosBaseUrl string = "http://localhost:5001/"
 
-// this is not a test of the tezos wallet app
+// this is not a test of the mavryk wallet app
 func SpeculosApprove() {
 	approve()
 }

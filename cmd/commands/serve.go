@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ecadlabs/signatory/pkg/auth"
-	"github.com/ecadlabs/signatory/pkg/middlewares"
-	"github.com/ecadlabs/signatory/pkg/server"
+	"github.com/mavryk-network/mavsign/pkg/auth"
+	"github.com/mavryk-network/mavsign/pkg/middlewares"
+	"github.com/mavryk-network/mavsign/pkg/server"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -23,7 +23,7 @@ func NewServeCommand(c *Context) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			srvConf := server.Server{
 				Address: c.config.Server.Address,
-				Signer:  c.signatory,
+				Signer:  c.mavsign,
 			}
 
 			if c.config.Server.JWTConfig != nil {
@@ -52,7 +52,7 @@ func NewServeCommand(c *Context) *cobra.Command {
 
 			if !noList {
 				w := log.StandardLogger().Writer()
-				err := listKeys(c.signatory, w, c.Context)
+				err := listKeys(c.mavsign, w, c.Context)
 				w.Close()
 				if err != nil {
 					return err
@@ -67,7 +67,7 @@ func NewServeCommand(c *Context) *cobra.Command {
 
 			utilityConf := server.UtilityServer{
 				Address: c.config.Server.UtilityAddress,
-				Health:  c.signatory,
+				Health:  c.mavsign,
 			}
 			utilitySrv := utilityConf.New()
 			utilityErrCh := make(chan error)

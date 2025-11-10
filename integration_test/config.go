@@ -7,13 +7,13 @@ import (
 )
 
 const (
-	filename = "signatory.yaml"
+	filename = "mavsign.yaml"
 )
 
 type Config struct {
 	Server ServerConfig            `yaml:"server"`
 	Vaults map[string]*VaultConfig `yaml:"vaults"`
-	Tezos  TezosConfig             `yaml:"tezos"`
+	Mavryk  MavrykConfig             `yaml:"mavryk"`
 }
 
 type JwtConfig struct {
@@ -41,9 +41,9 @@ type ServerConfig struct {
 	Jwt            JwtConfig `yaml:"jwt,omitempty"`
 }
 
-type TezosConfig = map[string]*TezosPolicy
+type MavrykConfig = map[string]*MavrykPolicy
 
-type TezosPolicy struct {
+type MavrykPolicy struct {
 	Allow       map[string][]string `yaml:"allow"`
 	LogPayloads bool                `yaml:"log_payloads"`
 	JwtUsers    []string            `yaml:"jwt_users,omitempty"`

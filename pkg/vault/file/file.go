@@ -7,10 +7,10 @@ import (
 	"io/ioutil"
 	"strings"
 
-	config "github.com/ecadlabs/signatory/pkg/config"
-	"github.com/ecadlabs/signatory/pkg/errors"
-	"github.com/ecadlabs/signatory/pkg/vault"
-	"github.com/ecadlabs/signatory/pkg/vault/memory"
+	config "github.com/mavryk-network/mavsign/pkg/config"
+	"github.com/mavryk-network/mavsign/pkg/errors"
+	"github.com/mavryk-network/mavsign/pkg/vault"
+	"github.com/mavryk-network/mavsign/pkg/vault/memory"
 	"gopkg.in/yaml.v3"
 )
 
@@ -25,7 +25,7 @@ func trimSecretKey(k string) string {
 	return string(k)
 }
 
-type tezosSecretJSONEntry struct {
+type mavrykSecretJSONEntry struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
 }
@@ -49,7 +49,7 @@ func init() {
 			return nil, fmt.Errorf("(File): %w", err)
 		}
 
-		var entries []*tezosSecretJSONEntry
+		var entries []*mavrykSecretJSONEntry
 		if err := json.Unmarshal(content, &entries); err != nil {
 			return nil, fmt.Errorf("(File): %w", err)
 		}

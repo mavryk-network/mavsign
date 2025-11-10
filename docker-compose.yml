@@ -1,11 +1,11 @@
 version: '3'
 services:
-  signatory:
-      image: ecadlabs/signatory
+  mavsign:
+      image: mavrykdynamics/mavsign
       ports:
         - "80:80"
       volumes: 
-        - ./signatory.yaml:/app/signatory.yaml
+        - ./mavsign.yaml:/app/mavsign.yaml
   grafana:
     image: grafana/grafana
     volumes: 

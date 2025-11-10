@@ -4,10 +4,10 @@ import styles from './FooterTop.module.scss';
 import ECADSvg from '../../../static/img/ECAD_logo.svg';
 
 const FeatureList = [
-	{
-		title: 'Powered by',
-		url: 'https://tezos-homebase.herokuapp.com/explorer/daos',
-	},
+	// {
+	// 	title: 'Powered by',
+	// 	url: 'https://tezos-homebase.herokuapp.com/explorer/daos',
+	// },
 ];
 
 function Feature({ title, url, image }) {

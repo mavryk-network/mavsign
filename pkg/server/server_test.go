@@ -9,25 +9,26 @@ import (
 	"strings"
 	"testing"
 
-	tz "github.com/ecadlabs/gotez/v2"
-	"github.com/ecadlabs/gotez/v2/crypt"
-	"github.com/ecadlabs/signatory/pkg/server"
-	"github.com/ecadlabs/signatory/pkg/signatory"
+	mv "github.com/mavryk-network/mavbingo/v2"
+	"github.com/mavryk-network/mavbingo/v2/crypt"
+	"github.com/mavryk-network/mavsign/pkg/server"
+	"github.com/mavryk-network/mavsign/pkg/mavsign"
+	"github.com/mavryk-network/mavsign/pkg/vault"
 	"github.com/stretchr/testify/require"
 )
 
 type signerMock struct {
 	SignResponse      crypt.Signature
 	SignError         error
-	PublicKeyResponse *signatory.PublicKey
+	PublicKeyResponse *mavsign.PublicKey
 	PublicKeyError    error
 }
 
-func (c *signerMock) Sign(ctx context.Context, req *signatory.SignRequest) (crypt.Signature, error) {
+func (c *signerMock) Sign(ctx context.Context, req *mavsign.SignRequest) (crypt.Signature, error) {
 	return c.SignResponse, c.SignError
 }
 
-func (c *signerMock) GetPublicKey(ctx context.Context, keyHash crypt.PublicKeyHash) (*signatory.PublicKey, error) {
+func (c *signerMock) GetPublicKey(ctx context.Context, keyHash crypt.PublicKeyHash) (*mavsign.PublicKey, error) {
 	if c.PublicKeyResponse == nil && c.PublicKeyError == nil {
 		return nil, errors.New("key not found")
 	}
@@ -39,7 +40,7 @@ func TestSign(t *testing.T) {
 		Name       string
 		Request    string
 		StatusCode int
-		Response   tz.Signature
+		Response   mv.Signature
 		Error      error
 		Expected   string
 	}
@@ -66,7 +67,7 @@ func TestSign(t *testing.T) {
 			Name:       "Ok",
 			Request:    "\"03123453\"",
 			StatusCode: http.StatusOK,
-			Response:   &tz.Ed25519Signature{1, 2, 3},
+			Response:   &mv.Ed25519Signature{1, 2, 3},
 			Expected:   "{\"signature\":\"edsigtXwQk7vJvUGLVjSDqE3egYMVYVvDctZCXnXrbecmB85kfN51fib1NKq6aDiVHYDNGMid1EW7hfq92ZUXYsag8Gyx4GFyU6\"}\n",
 		},
 		{
@@ -109,7 +110,7 @@ func TestSign(t *testing.T) {
 				body = strings.NewReader(c.Request)
 			}
 
-			req, err := http.NewRequest("POST", s.URL+"/keys/"+tz.Ed25519PublicKeyHash{}.String(), body)
+			req, err := http.NewRequest("POST", s.URL+"/keys/"+mv.Ed25519PublicKeyHash{}.String(), body)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -130,16 +131,27 @@ func TestSign(t *testing.T) {
 	}
 }
 
+type mockRef struct {
+	key crypt.PublicKey
+}
+
+func (k *mockRef) PublicKey() crypt.PublicKey { return k.key }
+func (k *mockRef) String() string             { return k.key.Hash().String() }
+func (k *mockRef) Vault() vault.Vault         { panic("not implemented") }
+func (k *mockRef) Sign(ctx context.Context, message []byte) (crypt.Signature, error) {
+	panic("not implemented")
+}
+
 func TestGetPublicKey(t *testing.T) {
 	type testCase struct {
 		Name       string
 		StatusCode int
-		Response   *signatory.PublicKey
+		Response   *mavsign.PublicKey
 		Error      error
 		Expected   string
 	}
 
-	mustPk := func(pk tz.PublicKey) crypt.PublicKey {
+	mustPk := func(pk mv.PublicKey) crypt.PublicKey {
 		out, err := crypt.NewPublicKey(pk)
 		if err != nil {
 			panic(err)
@@ -157,7 +169,7 @@ func TestGetPublicKey(t *testing.T) {
 		{
 			Name:       "Normal",
 			StatusCode: http.StatusOK,
-			Response:   &signatory.PublicKey{PublicKey: mustPk(&tz.Ed25519PublicKey{1, 2, 3})},
+			Response:   &mavsign.PublicKey{KeyReference: &mockRef{mustPk(&mv.Ed25519PublicKey{1, 2, 3})}},
 			Expected:   "{\"public_key\":\"edpktefgU4dfKqN1rZVBwBP8ZueBoJZfhDS3kHPSbo8c3aGPrMrunt\"}\n",
 		},
 	}
@@ -181,7 +193,7 @@ func TestGetPublicKey(t *testing.T) {
 			s := httptest.NewServer(handler)
 			defer s.Close()
 
-			req, err := http.NewRequest("GET", s.URL+"/keys/"+tz.Ed25519PublicKeyHash{}.String(), nil)
+			req, err := http.NewRequest("GET", s.URL+"/keys/"+mv.Ed25519PublicKeyHash{}.String(), nil)
 			if err != nil {
 				t.Fatal(err)
 			}

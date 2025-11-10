@@ -35,7 +35,7 @@ jobs:
           echo "Running tests..."
           mkdir unitcoverage
           go test -cover $(go list ./... | grep -v integration_test) -args -test.gocoverdir="$PWD/unitcoverage"
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: unit-test-coverage
           path: ./unitcoverage/
@@ -91,16 +91,16 @@ jobs:
 
       - name: Tag Docker images appropriately
         run: >
-          docker tag ghcr.io/ecadlabs/signatory:${{ github.sha }}-amd64 ghcr.io/ecadlabs/signatory:${{ steps.replaceslash.outputs.value }}-amd64;
-          docker tag ghcr.io/ecadlabs/signatory:${{ github.sha }}-arm64 ghcr.io/ecadlabs/signatory:${{ steps.replaceslash.outputs.value }}-arm64;
-          docker tag ghcr.io/ecadlabs/signatory:${{ github.sha }}-armv7 ghcr.io/ecadlabs/signatory:${{ steps.replaceslash.outputs.value }}-armv7;
+          docker tag ghcr.io/mavryk-network/mavsign:${{ github.sha }}-amd64 ghcr.io/mavryk-network/mavsign:${{ steps.replaceslash.outputs.value }}-amd64;
+          docker tag ghcr.io/mavryk-network/mavsign:${{ github.sha }}-arm64 ghcr.io/mavryk-network/mavsign:${{ steps.replaceslash.outputs.value }}-arm64;
+          docker tag ghcr.io/mavryk-network/mavsign:${{ github.sha }}-armv7 ghcr.io/mavryk-network/mavsign:${{ steps.replaceslash.outputs.value }}-armv7;
         if: "!startsWith(github.ref, 'refs/tags/v')"
 
-      - name: Push Signatory preview images to GH Container Registry
+      - name: Push MavSign preview images to GH Container Registry
         run: >
-         docker push ghcr.io/ecadlabs/signatory:${{ steps.replaceslash.outputs.value }}-amd64;
-         docker push ghcr.io/ecadlabs/signatory:${{ steps.replaceslash.outputs.value }}-arm64;
-         docker push ghcr.io/ecadlabs/signatory:${{ steps.replaceslash.outputs.value }}-armv7;
+         docker push ghcr.io/mavryk-network/mavsign:${{ steps.replaceslash.outputs.value }}-amd64;
+         docker push ghcr.io/mavryk-network/mavsign:${{ steps.replaceslash.outputs.value }}-arm64;
+         docker push ghcr.io/mavryk-network/mavsign:${{ steps.replaceslash.outputs.value }}-armv7;
         if: "!startsWith(github.ref, 'refs/tags/v')"
 
       - name: goreleaser release
@@ -136,14 +136,14 @@ jobs:
         if: "!startsWith(github.ref, 'refs/tags/v')"
       - name: Run tests
         env:
-          IMAGE: ghcr.io/ecadlabs/signatory:${{ steps.replaceslash.outputs.value }}-amd64
+          IMAGE: ghcr.io/mavryk-network/mavsign:${{ steps.replaceslash.outputs.value }}-amd64
           VAULT_AWS_USER: ${{ secrets.INTEGRATIONTEST_VAULT_AWS_USER }}
           VAULT_AWS_KEY: ${{ secrets.INTEGRATIONTEST_VAULT_AWS_KEY }}
           VAULT_AWS_SECRET: ${{ secrets.INTEGRATIONTEST_VAULT_AWS_SECRET }}
           VAULT_AWS_REGION: ${{ secrets.INTEGRATIONTEST_VAULT_AWS_REGION }}
-          VAULT_AWS_TZ2: ${{ secrets.INTEGRATIONTEST_VAULT_AWS_TZ2 }}
-          VAULT_AWS_TZ3: ${{ secrets.INTEGRATIONTEST_VAULT_AWS_TZ3 }}
-          VAULT_AWS_TZ3_PK: ${{ secrets.INTEGRATIONTEST_VAULT_AWS_TZ3_PK }}
+          VAULT_AWS_MV2: ${{ secrets.INTEGRATIONTEST_VAULT_AWS_MV2 }}
+          VAULT_AWS_MV3: ${{ secrets.INTEGRATIONTEST_VAULT_AWS_MV3 }}
+          VAULT_AWS_MV3_PK: ${{ secrets.INTEGRATIONTEST_VAULT_AWS_MV3_PK }}
           VAULT_AZ_CLIENTCERTTHUMB: ${{ secrets.INTEGRATIONTEST_VAULT_AZ_CLIENTCERTTHUMB }}
           VAULT_AZ_CLIENTID: ${{ secrets.INTEGRATIONTEST_VAULT_AZ_CLIENTID }}
           VAULT_AZ_RESGROUP: ${{ secrets.INTEGRATIONTEST_VAULT_AZ_RESGROUP }}
@@ -151,9 +151,9 @@ jobs:
           VAULT_AZ_SUBID: ${{ secrets.INTEGRATIONTEST_VAULT_AZ_SUBID }}
           VAULT_AZ_TENANTID: ${{ secrets.INTEGRATIONTEST_VAULT_AZ_TENANTID }}
           VAULT_AZ_VAULT: ${{ secrets.INTEGRATIONTEST_VAULT_AZ_VAULT }}
-          VAULT_AZ_TZ2: ${{ secrets.INTEGRATIONTEST_VAULT_AZ_TZ2 }}
-          VAULT_AZ_TZ3: ${{ secrets.INTEGRATIONTEST_VAULT_AZ_TZ3 }}
-          VAULT_AZ_TZ3_PK: ${{ secrets.INTEGRATIONTEST_VAULT_AZ_TZ3_PK }}
+          VAULT_AZ_MV2: ${{ secrets.INTEGRATIONTEST_VAULT_AZ_MV2 }}
+          VAULT_AZ_MV3: ${{ secrets.INTEGRATIONTEST_VAULT_AZ_MV3 }}
+          VAULT_AZ_MV3_PK: ${{ secrets.INTEGRATIONTEST_VAULT_AZ_MV3_PK }}
           VAULT_GCP_PROJECTID: ${{ secrets.INTEGRATIONTEST_VAULT_GCP_PROJECTID }}
           VAULT_GCP_PRIVATEKEYID: ${{ secrets.INTEGRATIONTEST_VAULT_GCP_PRIVATEKEYID }}
           VAULT_GCP_PRIVATEKEY: ${{ secrets.INTEGRATIONTEST_VAULT_GCP_PRIVATEKEY }}
@@ -162,8 +162,8 @@ jobs:
           VAULT_GCP_X509_URL: ${{ secrets.INTEGRATIONTEST_VAULT_GCP_X509_URL }}
           VAULT_GCP_KEYRING: ${{ secrets.INTEGRATIONTEST_VAULT_GCP_KEYRING }}
           VAULT_GCP_LOCATION: ${{ secrets.INTEGRATIONTEST_VAULT_GCP_LOCATION }}
-          VAULT_GCP_TZ3: ${{ secrets.INTEGRATIONTEST_VAULT_GCP_TZ3 }}
-          VAULT_GCP_TZ3_PK: ${{ secrets.INTEGRATIONTEST_VAULT_GCP_TZ3_PK }}
+          VAULT_GCP_MV3: ${{ secrets.INTEGRATIONTEST_VAULT_GCP_MV3 }}
+          VAULT_GCP_MV3_PK: ${{ secrets.INTEGRATIONTEST_VAULT_GCP_MV3_PK }}
         run: >
          cd integration_test;
          export ARCH=amd64;
@@ -172,12 +172,12 @@ jobs:
          echo $VAULT_AZ_SP_KEY |base64 -d >service-principal.key;
          chmod 777 ./hashicerts;
          docker compose up -d --wait --pull always;
-         docker exec octez sudo chown -R tezos /home/tezos/.tezos-client;
+         docker exec mavkit sudo chown -R mavryk /home/mavryk/.mavryk-client;
          go test ./...;
          docker compose kill;
          rm -f gcp-token.json;
          rm -f service-principal.key;
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: integration-test-coverage-env${{ matrix.testenvs }}
           path: ./integration_test/coverage/
@@ -196,15 +196,15 @@ jobs:
         run: |
           curl -L "$CC_BINARY_URL" > ./cc-test-reporter
           chmod +x ./cc-test-reporter
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: unit-test-coverage
           path: unit-test-coverage
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: integration-test-coverage-envcurrent
           path: integration-test-coverage-envcurrent
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: integration-test-coverage-envnext
           path: integration-test-coverage-envnext

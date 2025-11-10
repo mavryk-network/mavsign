@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/ecadlabs/signatory/pkg/config"
-	"github.com/ecadlabs/signatory/pkg/signatory"
-	"github.com/ecadlabs/signatory/pkg/vault"
-	"github.com/ecadlabs/signatory/pkg/vault/ledger"
+	"github.com/mavryk-network/mavsign/pkg/config"
+	"github.com/mavryk-network/mavsign/pkg/mavsign"
+	"github.com/mavryk-network/mavsign/pkg/vault"
+	"github.com/mavryk-network/mavsign/pkg/vault/ledger"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
@@ -61,16 +61,16 @@ func TestLedger(t *testing.T) {
 		require.Equal(t, publicKeyHash, pkh)
 	}
 
-	conf := signatory.Config{
+	conf := mavsign.Config{
 		Vaults:    map[string]*config.VaultConfig{"ledger": {Driver: "ledger"}},
-		Watermark: signatory.IgnoreWatermark{},
+		Watermark: mavsign.IgnoreWatermark{},
 		VaultFactory: vault.FactoryFunc(func(ctx context.Context, name string, conf *yaml.Node) (vault.Vault, error) {
 			return ledger.New(context.Background(), &ledger.Config{
 				ID:   "c4c56423",
 				Keys: []string{"bip25519/0'/0'"},
 			})
 		}),
-		Policy: map[string]*signatory.Policy{
+		Policy: map[string]*mavsign.Policy{
 			publicKeyHash: {
 				AllowedRequests: []string{"generic", "block", "endorsement"},
 				AllowedOps:      []string{"endorsement", "seed_nonce_revelation", "activate_account", "ballot", "reveal", "transaction", "origination", "delegation"},
@@ -78,19 +78,19 @@ func TestLedger(t *testing.T) {
 		},
 	}
 
-	signer, err := signatory.New(context.Background(), &conf)
+	signer, err := mavsign.New(context.Background(), &conf)
 	require.NoError(t, err)
 
 	pub, err := signer.ListPublicKeys(context.Background())
 	require.NoError(t, err)
 
-	require.Equal(t, []*signatory.PublicKey{
+	require.Equal(t, []*mavsign.PublicKey{
 		{
 			PublicKey:     "edpkv5y3MhiAcQtiAGvJ4DL64zbgXt3QeNJcv3kJ9Wji2deDNoDQZf",
 			PublicKeyHash: publicKeyHash,
 			VaultName:     "Ledger",
 			ID:            "bip32-ed25519/44'/1729'/0'/0'",
-			Policy: &signatory.Policy{
+			Policy: &mavsign.Policy{
 				AllowedRequests: []string{"generic", "block", "endorsement"},
 				AllowedOps:      []string{"endorsement", "seed_nonce_revelation", "activate_account", "ballot", "reveal", "transaction", "origination", "delegation"},
 			},
@@ -100,7 +100,7 @@ func TestLedger(t *testing.T) {
 
 	for _, r := range requests {
 		msg, _ := hex.DecodeString(r.message)
-		req := &signatory.SignRequest{
+		req := &mavsign.SignRequest{
 			PublicKeyHash: publicKeyHash,
 			Message:       msg,
 		}

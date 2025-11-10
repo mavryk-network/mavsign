@@ -1,7 +1,7 @@
 # host:port to listen on
 address: :6733
 
-# Optional private key for authenticated replies. Can be either Base58 encoded private key (see `signatory-tools gen-key`)
+# Optional private key for authenticated replies. Can be either Base58 encoded private key (see `mavsign-tools gen-key`)
 # of PEM encoded PKCS8 key data
 private_key: edsk3YfMTdSzkFqLtmiZoFtEN6sR9jp64zin7f4jUTJiKbTLCqkkcJ
 

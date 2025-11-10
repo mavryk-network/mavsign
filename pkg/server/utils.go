@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/ecadlabs/signatory/pkg/errors"
+	"github.com/mavryk-network/mavsign/pkg/errors"
 )
 
 // HTTPServer represents a subset of http.Server methods
@@ -20,7 +20,7 @@ func jsonResponse(w http.ResponseWriter, status int, v interface{}) {
 	json.NewEncoder(w).Encode(v)
 }
 
-func tezosJSONError(w http.ResponseWriter, err error) {
+func mavrykJSONError(w http.ResponseWriter, err error) {
 	type errorResponse []struct {
 		ID   string `json:"id,omitempty"`
 		Kind string `json:"kind,omitempty"`

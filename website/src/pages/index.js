@@ -16,7 +16,7 @@ function Home() {
 	return (
 		<Layout
 			title={`${siteConfig.title}`}
-			description='A Remote Signer for Tezos that keeps your keys in an HSM (Yubi, Azure KMS, Google KMS)<head />'
+			description='A Remote Signer for Mavryk that keeps your keys in an HSM (Yubi, Azure KMS, Google KMS)<head />'
 		>
 			<main>
 				<Hero />

@@ -2,29 +2,29 @@
 id: authorized_keys
 title: Authorized_Keys Configuration
 ---
-# Signatory's Authorized Key Authentication Feature
+# MavSign's Authorized Key Authentication Feature
 
-Signatory provides the option to authenticate the octez-client, by specifying an "authorized key" in the Signatory configuration file.  
+MavSign provides the option to authenticate the mavkit-client, by specifying an "authorized key" in the MavSign configuration file.  
 
 ## Motivation
 
-An authorized key can be configured to ensure that Signatory only signs requests from an octez-client instance containing the private key.
+An authorized key can be configured to ensure that MavSign only signs requests from an mavkit-client instance containing the private key.
 
 ## Configuration
 
-First, a key pair is generated using octez-client:
+First, a key pair is generated using mavkit-client:
 
 ```bash
-octez-client gen keys signatory-auth
+mavkit-client gen keys mavsign-auth
 ```
 
 Next, find the public key value:
 
 ```bash
-cat ~/.tezos-client/public_keys | grep -C 3 signatory-auth
+cat ~/.mavryk-client/public_keys | grep -C 3 mavsign-auth
 ```
 
-Finally, add the public key value to the Signatory configuration file.  It belongs within the `server` declaration:
+Finally, add the public key value to the MavSign configuration file.  It belongs within the `server` declaration:
 
 ```yaml
 server:
@@ -34,4 +34,4 @@ server:
     - edpkujLb5ZCZ2gprnRzE9aVHKZfx9A8EtWu2xxkwYSjBUJbesJ9rWE
 ```
 
-Restarting the Signatory service is required to apply the configuration change.  Henceforth, the Signatory service will only accept requests from the octez-client that is using the private key associated with the public key specified in the configuration file.
+Restarting the MavSign service is required to apply the configuration change.  Henceforth, the MavSign service will only accept requests from the mavkit-client that is using the private key associated with the public key specified in the configuration file.

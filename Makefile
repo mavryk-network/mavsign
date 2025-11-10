@@ -2,24 +2,26 @@ GIT_REVISION := $(shell git rev-parse HEAD)
 GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 CONTAINER_TAG ?= $(shell git branch --show-current)
 
-COLLECTOR_PKG = github.com/ecadlabs/signatory/pkg/metrics
+COLLECTOR_PKG = github.com/mavryk-network/mavsign/pkg/metrics
 
-PACKAGE_NAME          := github.com/ecadlabs/signatory
+PACKAGE_NAME          := github.com/mavryk-network/mavsign
 GOLANG_CROSS_VERSION  ?= v1.21.0
 
-all: signatory signatory-cli
+all: mavsign mavsign-cli
 
-signatory:
-	CGO_ENABLED=1 go build -ldflags "-X $(COLLECTOR_PKG).GitRevision=$(GIT_REVISION) -X $(COLLECTOR_PKG).GitBranch=$(GIT_BRANCH)" ./cmd/signatory
-signatory-cli:
-	CGO_ENABLED=1 go build -ldflags "-X $(COLLECTOR_PKG).GitRevision=$(GIT_REVISION) -X $(COLLECTOR_PKG).GitBranch=$(GIT_BRANCH)" ./cmd/signatory-cli
+# build is controlled by Go build system, so mark phony to ignore file timestamps
+.PHONY: mavsign mavsign-cli
+mavsign:
+	CGO_ENABLED=1 go build -ldflags "-X $(COLLECTOR_PKG).GitRevision=$(GIT_REVISION) -X $(COLLECTOR_PKG).GitBranch=$(GIT_BRANCH)" ./cmd/mavsign
+mavsign-cli:
+	CGO_ENABLED=1 go build -ldflags "-X $(COLLECTOR_PKG).GitRevision=$(GIT_REVISION) -X $(COLLECTOR_PKG).GitBranch=$(GIT_BRANCH)" ./cmd/mavsign-cli
 
 .PHONY: container
-container: signatory signatory-cli
-	docker build -t ecadlabs/signatory:$(CONTAINER_TAG) -f goreleaser.dockerfile .
+container: mavsign mavsign-cli
+	docker build -t mavrykdynamics/mavsign:$(CONTAINER_TAG) -f goreleaser.dockerfile .
 
 clean:
-	rm signatory signatory-cli
+	rm mavsign mavsign-cli
 
 .PHONY: release-dry-run
 release-dry-run:

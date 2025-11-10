@@ -6,9 +6,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/ecadlabs/signatory/pkg/metrics"
-	"github.com/ecadlabs/signatory/pkg/vault"
 	"github.com/gorilla/mux"
+	"github.com/mavryk-network/mavsign/pkg/metrics"
+	"github.com/mavryk-network/mavsign/pkg/vault"
 	log "github.com/sirupsen/logrus"
 )
 

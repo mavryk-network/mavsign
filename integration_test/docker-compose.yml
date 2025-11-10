@@ -4,16 +4,16 @@ networks:
 
 services:
 
-  flextesa:
-    container_name: flextesa
-    image: oxheadalpha/flextesa:latest
+  flexmasa:
+    container_name: flexmasa
+    image: mavrykdynamics/flexmasa:boreas-update-run
     ports:
       - "20000:20000"
       - "20001:20001"
     networks:
       - ecadnet
     volumes:
-      - ./flextesa.sh:/usr/bin/sigybox
+      - ./flexmasa.sh:/usr/bin/sigybox
     environment:
       - block_time=3
     command: sigybox $PROTOCOL
@@ -24,16 +24,16 @@ services:
       retries: 20
       start_period: 10s
 
-  flextesanobaking:
-    container_name: flextesanobaking
-    image: oxheadalpha/flextesa:latest
+  flexmasanobaking:
+    container_name: flexmasanobaking
+    image: mavrykdynamics/flexmasa:boreas-update-run
     ports:
       - "30000:20000"
       - "30001:20001"
     networks:
       - ecadnet
     volumes:
-      - ./flextesanobaking.sh:/usr/bin/sigybox
+      - ./flexmasanobaking.sh:/usr/bin/sigybox
     environment:
       - block_time=3
     command: sigybox $PROTOCOL
@@ -44,42 +44,42 @@ services:
       retries: 20
       start_period: 10s
 
-  octez:
-    container_name: octez
-    image: tezos/tezos:$OCTEZ_VERSION
+  mavkit:
+    container_name: mavkit
+    image: mavrykdynamics/mavryk:$MAVKIT_VERSION
     networks:
       - ecadnet
     entrypoint: tail -f /dev/null
     volumes:
-      - ./.tezos-client:/home/tezos/.tezos-client
-      - ./contract.event.tz:/home/tezos/contract.event.tz
+      - ./.mavryk-client:/home/mavryk/.mavryk-client
+      - ./contract.event.tz:/home/mavryk/contract.event.tz
     depends_on:
-      flextesa:
+      flexmasa:
         condition: service_healthy
-      signatory:
+      mavsign:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "octez-client", "list", "known", "addresses"]
+      test: ["CMD", "mavkit-client", "list", "known", "addresses"]
       interval: 1s
       timeout: 1s
       retries: 10
       start_period: 1s
     
-  signatory:
-    container_name: signatory
-    image: $IMAGE
+  mavsign:
+    container_name: mavsign
+    build: ../
     ports:
       - "6732:6732"
       - "9583:9583"
     networks:
       - ecadnet
     volumes:
-      - ./.watermarks:/var/lib/signatory
+      - ./.watermarks:/var/lib/mavsign
       - ./coverage:/opt/coverage
       - ./hashicerts:/opt/hashicerts
     configs:
       - source: sigy-config
-        target: /etc/signatory.yaml
+        target: /etc/mavsign.yaml
       - source: sigy-secret
         target: /etc/secret.json
       - source: gcp-token
@@ -128,18 +128,18 @@ services:
       - VAULT_DEV_ROOT_TOKEN_ID=root
       - VAULT_TOKEN=root
       - VAULT_ADDR=https://127.0.0.1:8200
-      - VAULT_CACERT=/opt/signatory/certs/vault-ca.pem
-    command: server -dev-tls -dev-tls-cert-dir=/opt/signatory/certs
+      - VAULT_CACERT=/opt/mavsign/certs/vault-ca.pem
+    command: server -dev-tls -dev-tls-cert-dir=/opt/mavsign/certs
     volumes:
-      - ./hashicerts:/opt/signatory/certs
+      - ./hashicerts:/opt/mavsign/certs
     cap_add:
       - IPC_LOCK      
 
 configs:
   sigy-config:
-    file: ./signatory.yaml
+    file: ./mavsign.yaml
   sigy-secret:
-    file: ./signatory-local-secret.json
+    file: ./mavsign-local-secret.json
   gcp-token:
     file: ./gcp-token.json
   az-sp-key:

@@ -5,20 +5,20 @@ import (
 	"os/exec"
 )
 
-func restart_signatory() {
-	_, err := exec.Command("docker", "compose", "-f", "./docker-compose.yml", "stop", "signatory").CombinedOutput()
+func restart_mavsign() {
+	_, err := exec.Command("docker", "compose", "-f", "./docker-compose.yml", "stop", "mavsign").CombinedOutput()
 	if err != nil {
-		panic("failed to stop signatory")
+		panic("failed to stop mavsign")
 	}
-	out, err := exec.Command("docker", "compose", "-f", "./docker-compose.yml", "up", "-d", "--wait", "signatory").CombinedOutput()
+	out, err := exec.Command("docker", "compose", "-f", "./docker-compose.yml", "up", "-d", "--wait", "mavsign").CombinedOutput()
 	if err != nil {
-		fmt.Println("restart signatory: failed to start: " + string(out))
-		panic("failed to start signatory during restart")
+		fmt.Println("restart mavsign: failed to start: " + string(out))
+		panic("failed to start mavsign during restart")
 	}
 }
 
 func backup_then_update_config(c Config) {
-	_, err := exec.Command("cp", "signatory.yaml", "signatory.original.yaml").CombinedOutput()
+	_, err := exec.Command("cp", "mavsign.yaml", "mavsign.original.yaml").CombinedOutput()
 	if err != nil {
 		panic("failed to backup config")
 	}
@@ -29,11 +29,11 @@ func backup_then_update_config(c Config) {
 }
 
 func restore_config() {
-	_, err := exec.Command("mv", "signatory.original.yaml", "signatory.yaml").CombinedOutput()
+	_, err := exec.Command("mv", "mavsign.original.yaml", "mavsign.yaml").CombinedOutput()
 	if err != nil {
 		panic("failed to restore original config")
 	}
-	restart_signatory()
+	restart_mavsign()
 }
 
 func restart_stack() {

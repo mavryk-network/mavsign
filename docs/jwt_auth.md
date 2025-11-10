@@ -3,41 +3,41 @@ id: jwt
 title: JWT
 ---
 
-# JWT - Signatory interaction
+# JWT - MavSign interaction
 
-The diagram represents a sequence of interactions between a client and a Signatory service, which appears to be a service that handles cryptographic signing operations. Here is a breakdown of the sequence of interactions:
+The diagram represents a sequence of interactions between a client and a MavSign service, which appears to be a service that handles cryptographic signing operations. Here is a breakdown of the sequence of interactions:
 
 ```mermaid
 sequenceDiagram
     participant Client
-    participant Signatory
-    Client->>Signatory: Provide credentials
-    Signatory->>Client: Verify credentials
-    Note over Signatory: Create JWT
-    Signatory->>Client: Send JWT
+    participant MavSign
+    Client->>MavSign: Provide credentials
+    MavSign->>Client: Verify credentials
+    Note over MavSign: Create JWT
+    MavSign->>Client: Send JWT
     Note over Client: Store JWT
-    Client->>Signatory: Request signing operation (include JWT)
-    Signatory->>Signatory: Validate JWT signature
-    Note over Signatory: Check claims (public key, roles, permissions)
+    Client->>MavSign: Request signing operation (include JWT)
+    MavSign->>MavSign: Validate JWT signature
+    Note over MavSign: Check claims (public key, roles, permissions)
     alt JWT is valid and client is authorized
-        Signatory->>Signatory: Sign operation with private key
-        Signatory->>Client: Send signed operation
+        MavSign->>MavSign: Sign operation with private key
+        MavSign->>Client: Send signed operation
     else JWT is invalid or client is unauthorized
-        Signatory->>Client: Access denied (error message)
+        MavSign->>Client: Access denied (error message)
     end
 ```
 
-1. The client provides its credentials to the Signatory service.
-2. The Signatory service verifies the credentials provided by the client.
-3. If the credentials are valid, the Signatory service creates a JSON Web Token (JWT) and sends it to the client.
+1. The client provides its credentials to the MavSign service.
+2. The MavSign service verifies the credentials provided by the client.
+3. If the credentials are valid, the MavSign service creates a JSON Web Token (JWT) and sends it to the client.
 4. The client stores the JWT for later use.
-5. The client requests a signing operation from the Signatory service, and includes the JWT in the request.
-6. The Signatory service validates the JWT signature and checks the claims in the JWT (such as the public key, roles, and permissions).
-7. If the JWT is valid and the client is authorized, the Signatory service signs the operation with its private key and sends the signed operation back to the client.
-8. If the JWT is invalid or the client is unauthorized, the Signatory service sends an access denied error message to the client.
+5. The client requests a signing operation from the MavSign service, and includes the JWT in the request.
+6. The MavSign service validates the JWT signature and checks the claims in the JWT (such as the public key, roles, and permissions).
+7. If the JWT is valid and the client is authorized, the MavSign service signs the operation with its private key and sends the signed operation back to the client.
+8. If the JWT is invalid or the client is unauthorized, the MavSign service sends an access denied error message to the client.
 9. When the token expires or any other token authentication failures happen, the client can start again from 1. 
 
-## Sample Signatory JWT configuration
+## Sample MavSign JWT configuration
 
 `jwt_exp` is the time duration (in minutes) for which the token is valid and it is optional. When not provided the token expiry is 60 minutes, otherwise it is `current time + jwt_exp`.   
 
@@ -110,9 +110,9 @@ server:
 
 ## Credentials rotation
 
-The credentials can be rotated by updating the configuration file and restarting the Signatory service.
+The credentials can be rotated by updating the configuration file and restarting the MavSign service.
 
-Older credentials can be removed from the configuration file after the new credentials are added and signatory is up and serving. The Signatory service will continue to accept the older credentials until the `old_cred_exp` time expires. If any error occurs with expiry time, the Signatory service will stop accepting the older credentials immediately. The `old_cred_exp` field is `GMT` expressed in `YYYY-MM-DD hh:mm:ss` format.
+Older credentials can be removed from the configuration file after the new credentials are added and mavsign is up and serving. The MavSign service will continue to accept the older credentials until the `old_cred_exp` time expires. If any error occurs with expiry time, the MavSign service will stop accepting the older credentials immediately. The `old_cred_exp` field is `GMT` expressed in `YYYY-MM-DD hh:mm:ss` format.
 
 ### sample configuration file:
 
@@ -141,7 +141,7 @@ If no JWT users are configured for a PKH, then any JWT token will be accepted fo
 ### sample configuration file:
 
 ```yaml
-tezos:
+mavryk:
   tz3cbDCwrqFqfx1dBhHoXTwZ9FG3MDrtyMs6:
     jwt_users:
       - user_name1
@@ -158,6 +158,6 @@ tezos:
 
 ## Important security note:
 
-TLS should be taken care by the user who configures JWT as the authentication mechanism in Signatory for the clients.
+TLS should be taken care by the user who configures JWT as the authentication mechanism in MavSign for the clients.
 
-The configuration file also contains sensitive information when using JWT with Signatory, so that file must also be secure.
+The configuration file also contains sensitive information when using JWT with MavSign, so that file must also be secure.

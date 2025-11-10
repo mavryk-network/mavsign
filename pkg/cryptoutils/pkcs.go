@@ -11,7 +11,7 @@ import (
 	"fmt"
 
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
-	"github.com/ecadlabs/gotez/v2/crypt"
+	"github.com/mavryk-network/mavbingo/v2/crypt"
 	"golang.org/x/crypto/cryptobyte"
 )
 
@@ -96,7 +96,7 @@ func marshalPKCS8ECDSAPrivateKey(key *ecdsa.PrivateKey) ([]byte, error) {
 	return asn1.Marshal(privKey)
 }
 
-// marshalECPrivateKey marshals an EC private key into ASN.1, DER format and
+// marshalECPrivateKeyWithOID marshals an EC private key into ASN.1, DER format and
 // sets the curve ID to the given OID, or omits it if OID is nil.
 func marshalECPrivateKeyWithOID(key *ecdsa.PrivateKey, oid asn1.ObjectIdentifier) ([]byte, error) {
 	privateKeyBytes := key.D.Bytes()

@@ -17,7 +17,7 @@ type APDUCommand struct {
 	P2      uint8
 	Data    []byte
 	Raw     []byte
-	ForceLc bool // Some applications (i.e. Tezos) might require Lc byte even if the data length is zero
+	ForceLc bool // Some applications (i.e. Mavryk) might require Lc byte even if the data length is zero
 }
 
 // Bytes returns packed APDU

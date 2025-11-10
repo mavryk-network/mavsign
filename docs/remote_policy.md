@@ -14,9 +14,9 @@ The hook is called after the standard request type and operation checks. If the 
 sequenceDiagram
 autonumber
 participant C as Client
-participant S as Signatory
+participant S as MavSign
 participant R as Remote Policy<br> Service
-C->>S: Tezos Operation
+C->>S: Mavryk Operation
 S-->>+R: POST operation and metadata
 R-->>S: Response 200 OK
 S-->>S: Signs 
@@ -35,7 +35,7 @@ The service response can be authenticated using a signature. To do so the servic
 # config root
 policy_hook:
     address: host:port
-    # List of authorized keys in Tezos Base58 format
+    # List of authorized keys in Mavryk Base58 format
     authorized_keys:
         - pub1
         - pub2
@@ -52,9 +52,9 @@ policy_hook:
     "request": "base64",
     // Client address
     "source": "ip_address",
-    // Requested public key hash in Tezos Base58 format
+    // Requested public key hash in Mavryk Base58 format
     "public_key_hash": "base58",
-    // Client public key hash in Tezos Base58 format. Presents only if the incoming sign request was authenticated
+    // Client public key hash in Mavryk Base58 format. Presents only if the incoming sign request was authenticated
     "client_key_hash": "base58",
     // One time nonce. Presents only if the policy service call is authenticated
     "nonce": "string"
@@ -75,7 +75,7 @@ policy_hook:
         // The request nonce
 	    "nonce": "string"
     },
-    // Payload signature in Tezos Base58 format
+    // Payload signature in Mavryk Base58 format
     "signature": "base58"
 }
 ```
@@ -88,4 +88,4 @@ Just the HTTP status code is inspected. The sign operation is allowed if the ser
 
 ## Reference implementation
 
-See [Approve List Service](https://github.com/ecadlabs/signatory/tree/main/cmd/approve-list-svc)
+See [Approve List Service](https://github.com/mavryk-network/mavsign/tree/main/cmd/approve-list-svc)
