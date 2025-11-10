@@ -6,7 +6,7 @@ export opstest='opstest,edpkvSkEEfVMKvAv87env4kMNwLfuLYe7y7wXqgfvrwJwhJJpmL1GB,m
 
 root_path=/tmp/mini-box
 
-flexmasa mini-net \
+mavbox mini-net \
          --no-baking \
          --root "$root_path" --size 1 \
          --set-history-mode N000:archive \

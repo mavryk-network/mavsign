@@ -1,2 +1,2 @@
 { "base_dir": "/home/mavryk/.mavryk-client",
-  "endpoint": "http://flexmasa:20000", "web_port": 8080, "confirmations": 0 }
+  "endpoint": "http://mavbox:20000", "web_port": 8080, "confirmations": 0 }

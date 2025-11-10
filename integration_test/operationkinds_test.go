@@ -17,7 +17,7 @@ const (
 	alias1        = "opstest1"
 	contract      = "contract.event.tz"
 	contractAlias = "emit_event"
-	flexmasanob   = "http://flexmasanobaking:20000"
+	mavboxnob   = "http://mavboxnobaking:20000"
 	vault         = "File"
 )
 
@@ -39,7 +39,7 @@ var testcases = []testCase{
 		kind:           "preendorsement",
 		op:             "preendorsement",
 		testSetupOps:   nil,
-		testOp:         []string{"--endpoint", flexmasanob, "preendorse", "for", alias, "--force"},
+		testOp:         []string{"--endpoint", mavboxnob, "preendorse", "for", alias, "--force"},
 		account:        account,
 		allowPolicy:    map[string][]string{"generic": {"preendorsement"}, "preendorsement": {}},
 		notAllowPolicy: map[string][]string{"generic": getAllOpsExcluding([]string{"preendorsement"}), "endorsement": {}, "block": {}},
@@ -49,7 +49,7 @@ var testcases = []testCase{
 		kind:           "endorsement",
 		op:             "endorsement",
 		testSetupOps:   nil,
-		testOp:         []string{"--endpoint", flexmasanob, "endorse", "for", alias, "--force"},
+		testOp:         []string{"--endpoint", mavboxnob, "endorse", "for", alias, "--force"},
 		account:        account,
 		allowPolicy:    map[string][]string{"generic": {"endorsement"}, "endorsement": {}},
 		notAllowPolicy: map[string][]string{"generic": getAllOpsExcluding([]string{"endorsement"}), "preendorsement": {}, "block": {}},
@@ -59,7 +59,7 @@ var testcases = []testCase{
 		kind:           "block",
 		op:             "block",
 		testSetupOps:   nil,
-		testOp:         []string{"--endpoint", flexmasanob, "bake", "for", alias, "--force"},
+		testOp:         []string{"--endpoint", mavboxnob, "bake", "for", alias, "--force"},
 		account:        account,
 		allowPolicy:    map[string][]string{"generic": {}, "block": {}},
 		notAllowPolicy: map[string][]string{"generic": getAllOpsExcluding([]string{"block"}), "preendorsement": {}, "endorsement": {}},

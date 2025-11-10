@@ -35,7 +35,7 @@ mavryk:
         - transaction
       block:
 
-  #opstest is not bootstrapped in flexmasa, as is used for reveal test
+  #opstest is not bootstrapped in mavbox, as is used for reveal test
   mv1Dgk11ZRkuwUJTpGYgohPJ2WXq82v6yC7v:
     allow:
     log_payloads: true

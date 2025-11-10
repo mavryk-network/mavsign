@@ -16,7 +16,6 @@ require (
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0
 	github.com/ecadlabs/go-pkcs11 v0.3.0
 	github.com/ecadlabs/goblst v1.1.0
-	github.com/mavryk-network/mavbingo/v2 v2.3.3
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/google/tink/go v1.7.0
 	github.com/google/uuid v1.6.0
@@ -24,6 +23,7 @@ require (
 	github.com/hashicorp/vault/api v1.16.0
 	github.com/hashicorp/vault/api/auth/approle v0.9.0
 	github.com/karalabe/hid v1.0.0
+	github.com/mavryk-network/mavbingo/v2 v2.3.3
 	github.com/prometheus/client_golang v1.22.0
 	github.com/segmentio/ksuid v1.0.4
 	github.com/sirupsen/logrus v1.9.3
