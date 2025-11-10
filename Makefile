@@ -2,24 +2,26 @@ GIT_REVISION := $(shell git rev-parse HEAD)
 GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 CONTAINER_TAG ?= $(shell git branch --show-current)
 
-COLLECTOR_PKG = github.com/mavryk-network/mavryk-signatory/pkg/metrics
+COLLECTOR_PKG = github.com/mavryk-network/mavsign/pkg/metrics
 
-PACKAGE_NAME          := github.com/mavryk-network/mavryk-signatory
-GOLANG_CROSS_VERSION  ?= v1.18.3
+PACKAGE_NAME          := github.com/mavryk-network/mavsign
+GOLANG_CROSS_VERSION  ?= v1.21.0
 
-all: signatory signatory-cli
+all: mavsign mavsign-cli
 
-signatory:
-	CGO_ENABLED=1 go build -ldflags "-X $(COLLECTOR_PKG).GitRevision=$(GIT_REVISION) -X $(COLLECTOR_PKG).GitBranch=$(GIT_BRANCH)" ./cmd/signatory
-signatory-cli:
-	CGO_ENABLED=1 go build -ldflags "-X $(COLLECTOR_PKG).GitRevision=$(GIT_REVISION) -X $(COLLECTOR_PKG).GitBranch=$(GIT_BRANCH)" ./cmd/signatory-cli
+# build is controlled by Go build system, so mark phony to ignore file timestamps
+.PHONY: mavsign mavsign-cli
+mavsign:
+	CGO_ENABLED=1 go build -ldflags "-X $(COLLECTOR_PKG).GitRevision=$(GIT_REVISION) -X $(COLLECTOR_PKG).GitBranch=$(GIT_BRANCH)" ./cmd/mavsign
+mavsign-cli:
+	CGO_ENABLED=1 go build -ldflags "-X $(COLLECTOR_PKG).GitRevision=$(GIT_REVISION) -X $(COLLECTOR_PKG).GitBranch=$(GIT_BRANCH)" ./cmd/mavsign-cli
 
 .PHONY: container
-container: signatory signatory-cli
-	docker build -t mavrykdynamics/mavryk-signatory:$(CONTAINER_TAG) .
+container: mavsign mavsign-cli
+	docker build -t mavrykdynamics/mavsign:$(CONTAINER_TAG) -f goreleaser.dockerfile .
 
 clean:
-	rm signatory signatory-cli
+	rm mavsign mavsign-cli
 
 .PHONY: release-dry-run
 release-dry-run:
@@ -31,26 +33,42 @@ release-dry-run:
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v `pwd`:/go/src/$(PACKAGE_NAME) \
 		-w /go/src/$(PACKAGE_NAME) \
-		goreleaser/goreleaser-cross:${GOLANG_CROSS_VERSION} \
+		ghcr.io/goreleaser/goreleaser-cross:${GOLANG_CROSS_VERSION} \
+		release \
+		--rm-dist \
+		--snapshot
+
+.PHONY: release-preview
+release-preview:
+	docker run \
+		--rm \
+		--privileged \
+		-e CGO_ENABLED=1 \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v $(HOME)/.docker:/root/.docker \
+		-v `pwd`:/go/src/$(PACKAGE_NAME) \
+		-w /go/src/$(PACKAGE_NAME) \
+		ghcr.io/goreleaser/goreleaser-cross:${GOLANG_CROSS_VERSION} \
 		release \
 		--rm-dist \
 		--snapshot
 
 .PHONY: release
 release:
-	@if [ ! -f ".release-env" ]; then \
-		echo "\033[91m.release-env is required for release\033[0m";\
+	@if [ ! -f ".env" ]; then \
+		echo ".env file is required for release";\
 		exit 1;\
 	fi
 	docker run \
 		--rm \
 		--privileged \
 		-e CGO_ENABLED=1 \
-		--env-file .release-env \
+		--env-file .env \
 		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v $(HOME)/.docker:/root/.docker \
 		-v `pwd`:/go/src/$(PACKAGE_NAME) \
 		-w /go/src/$(PACKAGE_NAME) \
-		goreleaser/goreleaser-cross:${GOLANG_CROSS_VERSION} \
+		ghcr.io/goreleaser/goreleaser-cross:${GOLANG_CROSS_VERSION} \
 		release \
 		--rm-dist \
 		--skip-validate

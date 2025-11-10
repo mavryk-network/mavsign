@@ -1,10 +1,17 @@
-FROM ubuntu:22.04
-RUN apt-get update
-RUN apt-get install -y curl apt-transport-https
-RUN apt-get clean
+FROM golang:1.24-bullseye AS builder
+RUN apt-get update && apt-get install -y make
+ADD . /mavsign
+WORKDIR /mavsign
+RUN make
 
-COPY ./signatory /bin
-COPY ./signatory-cli /bin
+FROM debian:bullseye-slim
+WORKDIR /mavsign
+RUN apt update -y \
+    && apt install -y curl apt-transport-https\
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /mavsign/mavsign.yaml /mavsign/mavsign.yaml
+COPY --from=builder /mavsign/mavsign /usr/bin/mavsign
+COPY --from=builder /mavsign/mavsign-cli /usr/bin/mavsign-cli
 
-ENTRYPOINT ["/bin/signatory"]
-
+ENTRYPOINT ["/usr/bin/mavsign"]
+CMD [ "-c", "/mavsign/mavsign.yaml" ]

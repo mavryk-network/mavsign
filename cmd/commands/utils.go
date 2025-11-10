@@ -5,26 +5,34 @@ import (
 	"io"
 	"text/template"
 
-	"github.com/mavryk-network/mavryk-signatory/pkg/signatory"
+	"github.com/mavryk-network/mavsign/pkg/mavsign"
+	"github.com/mavryk-network/mavsign/pkg/vault"
 )
 
 const listTemplateSrc = `{{range . -}}
-Public Key Hash:    {{.PublicKeyHash}}
-Vault:              {{.VaultName}}
-ID:                 {{.ID}}
+Public Key Hash:    {{.Hash}}
+Reference:          {{keyRef .KeyReference}}
+Vault:              {{.Vault.Name}}
 Active:             {{.Active}}
 {{with .Policy -}}
-Allowed Operations: {{.AllowedOperations}}
-Allowed Kinds:      {{.AllowedKinds}}
+Allowed Requests:   {{.AllowedRequests}}
+Allowed Operations: {{.AllowedOps}}
 {{end}}
 {{end -}}
 `
 
 var (
-	listTpl = template.Must(template.New("list").Parse(listTemplateSrc))
+	listTpl = template.Must(template.New("list").Funcs(template.FuncMap{
+		"keyRef": func(ref vault.KeyReference) string {
+			if withID, ok := ref.(vault.WithID); ok {
+				return withID.ID()
+			}
+			return ""
+		},
+	}).Parse(listTemplateSrc))
 )
 
-func listKeys(s *signatory.Signatory, w io.Writer, ctx context.Context) error {
+func listKeys(s *mavsign.MavSign, w io.Writer, ctx context.Context) error {
 	keys, err := s.ListPublicKeys(ctx)
 	if err != nil {
 		return err

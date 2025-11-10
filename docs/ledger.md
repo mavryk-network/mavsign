@@ -5,8 +5,8 @@ title: Ledger
 
 # Ledger vault
 
-Connect the ledger device to the system in which signatory is running.
-Install tezos-wallet and tezos-baker apps from [ledger live](https://www.ledger.com/ledger-live/download).
+Connect the ledger device to the system in which mavsign is running.
+Install mavryk-wallet and mavryk-baker apps from [ledger live](https://www.ledger.com/ledger-live/download).
 
 Note: Developer mode might be needed to install baker app.
 [Ledger Developer mode](https://developers.ledger.com/docs/live-app/developer-mode/#:~:text=To%20activate%20the%20Developer%20mode,Live%20version%202.32%20and%20above.)
@@ -38,7 +38,6 @@ Examples (equivalent): `bip32-ed25519/m/44'/1729'/0'/0'`,
 
 ```yaml
 vaults:
-# Name of vault
   ledger:
     driver: ledger
     config:
@@ -59,13 +58,37 @@ Example:
 close_after: 3600s
 ```
 
-## Getting data from ledger for signatory configuration using CLI
+### Transports
 
-Keep tezos-wallet app open for the below commands and for signing any wallet transactions.
+By default Ledger vault uses `usb` transport. Another available transport is `tcp` used primarily for interaction with [Speculos](https://github.com/LedgerHQ/speculos)
+emulator. It can be enabled using `transport` option:
+
+```yaml
+vaults:
+  ledger:
+    driver: ledger
+    config:
+      id: 3944f7a0
+      transport: tcp://127.0.0.1:9999
+      keys:
+        - "bip32-ed25519/0'/0'"
+        - "secp256k1/0'/1'"
+      close_after: 3600s
+```
+
+In addition `mavsign-cli ledger` command also accepts `-t` / `--transport` key with the same URL-like syntax:
+
+```sh
+mavsign-cli ledger --transport 'tcp://127.0.0.1:9999' list
+```
+
+## Getting data from ledger for mavsign configuration using CLI
+
+Keep mavryk-wallet app open for the below commands and for signing any wallet transactions.
 During every wallet transaction `Accept/Reject` input should be provided in the ledger when prompted.
 
 ```sh
-    % ./signatory-cli list -c ./sig-ledger.yaml 
+    % ./mavsign-cli list -c ./sig-ledger.yaml 
     INFO[0000] Initializing vault                            vault=ledger vault_name=ledger
     Public Key Hash:    tz1TrrJS7XU2WGJJEZcPxaB7cXWLd8pCL7SW
     Vault:              Ledger
@@ -81,35 +104,39 @@ During every wallet transaction `Accept/Reject` input should be provided in the 
 ### List all connected Ledgers
 
 ```sh
-% signatory-cli ledger list
+% mavsign-cli ledger list
 Path:    IOService:/AppleARMPE/arm-io@10F00000/AppleT810xIO/usb-drd1@2280000/AppleT8103USBXHCI@01000000/usb-drd1-port-hs@01100000/USB2.1 Hub@01100000/AppleUSB20Hub@01100000/AppleUSB20HubPort@01130000/Nano S@01130000/Nano S@0/AppleUserUSBHostHIDDevice
 ID:      tz1Qrqpz6bVUgZc5o5qARHB7j2v57z6knm55 / 3944f7a0
 Version: TezBake 2.2.11 a6fbd27f
 ```
 
-## Setup baking with signatory and ledger
+### Ledger device lock
 
-Keep tezos-baker app open for the below configurations and when the baker is running.
+MavSign acquires a read lock on the ledger device when in operation. Be aware that when the MavSign service is running, and it has a valid configuration for a ledger device, the mavsign-cli binary will encounter error "ledger: hidapi: failed to open device" trying to list ledgers. Only 1 process can acquire a read lock on the ledger device.
+
+## Setup baking with mavsign and ledger
+
+Keep mavryk-baker app open for the below configurations and when the baker is running.
 No prompt will be seen in ledger during signing operations.
 
 ```sh
-signatory-cli ledger setup-baking [--chain-id <chain_id>] [--main-hwm <hwm>] [--test-hwm <hwm>] [-d <device>] <path>
+mavsign-cli ledger setup-baking [--chain-id <chain_id>] [--main-hwm <hwm>] [--test-hwm <hwm>] [-d <device>] <path>
 ```
 
 Example:
 
 ```sh
-signatory-cli ledger setup-baking -d 3944f7a0 "bip32-ed25519/44'/1729'/0'/0'"
+mavsign-cli ledger setup-baking -d 3944f7a0 "bip32-ed25519/44'/1729'/0'/0'"
 ```
 
 ### Reset high water marks
 
 ```sh
-signatory-cli ledger set-high-watermark [-d <device>] <hwm>
+mavsign-cli ledger set-high-watermark [-d <device>] <hwm>
 ```
 
 Example:
 
 ```sh
-signatory-cli ledger set-high-watermark -d 3944f7a0 0
+mavsign-cli ledger set-high-watermark -d 3944f7a0 0
 ```

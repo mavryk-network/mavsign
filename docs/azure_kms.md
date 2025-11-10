@@ -5,16 +5,16 @@ title: AzureKMS
 
 # Azure Key Vault
 
-The goal of this guide is to configure Signatory to use an Azure Key Vault as a signing backend.
+The goal of this guide is to configure MavSign to use an Azure Key Vault as a signing backend.
 
-To setup Azure Key Vault as a signing backend for Signatory, you will need:
+To setup Azure Key Vault as a signing backend for MavSign, you will need:
 
 * An active Azure subscription
 * The [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/?view=azure-cli-latest) installed and configured on your computer.
 
 ## **Azure setup**
 
-You will need to create several Azure resources, and copy configuration into the signatory config file. Let's begin.
+You will need to create several Azure resources, and copy configuration into the mavsign config file. Let's begin.
 
 This guide uses the `az` cli command to create all required resources. For each command, you will get a json formatted result, or an error.
 
@@ -26,7 +26,7 @@ az login
 
 ### **Create an Azure resource group.**
 
-You need to specify the location you want your Signatory to be located. This is up to you. The closer to your baker the better, but other criteria may be important to you.
+You need to specify the location you want your MavSign to be located. This is up to you. The closer to your baker the better, but other criteria may be important to you.
 
 ```sh
 az group create \
@@ -37,7 +37,7 @@ az group create \
 Example:
 
 ```sh
-az group create --name "signatory" --location "canadaeast"
+az group create --name "mavsign" --location "canadaeast"
 ```
 
 ### **Create a new Key Vault, with HSM enabled**
@@ -59,6 +59,8 @@ az keyvault create --name "sigy" --resource-group "sigy" --sku "premium"
 
 The `--sku` argument must be set to premium if you want to have your keys stored in a HSM.
 
+Take note of the returned values of `properties.vaultUri` and `properties.tenantId`, these will be used later in the MavSign configuration.
+
 ### **Create a Service Principal for authentication**
 
 This document describes a service principal creation flow and a backend configuration for a key-based authentication. Alternatively, you can use client secret-based authentication but it's not recommended.
@@ -79,11 +81,13 @@ openssl x509 -signkey "service-principal.key" -in "service-principal.csr" -req -
 
 Now you can safely delete the request file (`.csr`).
 
+**Note:** If running mavsign in docker then the service-principal.crt should be within the docker. The full path of service-principal.crt within the container is a MavSign configuration file value.
+
 #### **Create a Service Principal for authentication**
 
 Next we need to create a "service principal" resource (also known as a "service account" or a "App Registration").
 
-This is the credential that allows Signatory to authenticate and work with the Azure Key Vault service.
+This is the credential that allows MavSign to authenticate and work with the Azure Key Vault service.
 
 ```sh
 az ad sp create-for-rbac \
@@ -94,7 +98,7 @@ az ad sp create-for-rbac \
 Example:
 
 ```sh
-az ad sp create-for-rbac -n "signatory" --cert "@service-principal.crt"
+az ad sp create-for-rbac -n "mavsign" --cert "@service-principal.crt"
 ```
 
 Example output:
@@ -115,8 +119,8 @@ Creating a role assignment under the scope of "/subscriptions/be273d20-6dc1-4bbc
   "tenant": "50c46f11-1d0a-4c56-b468-1bcb03a8f69e"
 }
 ```
+Take note of the returned value of `appId`, it is used in subsequent steps, and later in the MavSign configuration.
 
-**Note:** If running signatory in docker then the service-principal.crt should be within the docker
 
 #### **Create a PKCS #12 file (the Microsoft way)**
 
@@ -159,7 +163,7 @@ Example output:
 ]
 ```
 
-The `customKeyIdentifier` contains the certificate's SHA-1 hash (called a thumbprint in Azure documentation).
+The `customKeyIdentifier` contains the certificate's SHA-1 hash (called a thumbprint in Azure documentation). The thumbprint of the certificate can also be found in Azure portal, through Active Directory -> App Registrations -> Client Credentials.
 
 You don't need the certificate anymore.
 
@@ -169,7 +173,7 @@ Next, we need to grant the new service principal access to our Key Vault. You ne
 
 ```sh
 az keyvault set-policy \
-    --name signatory-keyvault \
+    --name mavsign-keyvault \
     --spn APPID \
     --key-permissions sign list get import
 ```
@@ -177,7 +181,7 @@ az keyvault set-policy \
 Example:
 
 ```sh
-az keyvault set-policy --name signatory --spn "d5ccc5ea-8a1f-4dc1-9673-183a4c85e280" --key-permissions sign list get import
+az keyvault set-policy --name mavsign --spn "d5ccc5ea-8a1f-4dc1-9673-183a4c85e280" --key-permissions sign list get import
 ```
 
 #### **Enable Microsoft.ResourceHealth service (optional)**
@@ -242,7 +246,7 @@ Example output:
 Example:
 
 ```yaml
-vault: https://signatory.vault.azure.net/
+vault: https://mavsign.vault.azure.net/
 tenant_id: 50c46f11-1d0a-4c56-b468-1bcb03a8f69e
 client_id: d5ccc5ea-8a1f-4dc1-9673-183a4c85e280
 client_private_key: service-principal.key
@@ -277,7 +281,7 @@ az keyvault key create --curve P-256 --kty EC-HSM --name "sigy-key" --vault-name
 **Obtain public key hash (PKH) of above key:**
 
 ```sh
-% ./signatory-cli list -c /etc/s.yaml
+% ./mavsign-cli list -c /etc/s.yaml
 Public Key Hash:    tz3d6nYmR1LmSDsgJ463Kgd8EbH53pYnuv8S
 Vault:              Azure
 ID:                 https://sigy.vault.azure.net/keys/sigy-EC-HSM/77154e5846b4sdajbf78fs876dfse963b0b4bec
@@ -286,9 +290,13 @@ Allowed Operations: [block endorsement generic]
 Allowed Kinds:      [endorsement transaction]
 ```
 
-**Update signatory.yaml config with PKH:**
+**Update mavsign.yaml config with PKH:**
 
 ```yaml
+server:
+  address: :6732
+  utility_address: :9583
+
 vaults:
   azure:
     driver: azure
@@ -304,12 +312,11 @@ vaults:
 mavryk:
   tz3d6nYmR1LmSDsgJ463Kgd8EbH53pYnuv8S:
     log_payloads: true
-    allowed_operations:
-      # List of [generic, block, endorsement]
-      - generic
-      - block
-      - endorsement
-    allowed_kinds:
-      # List of [endorsement, ballot, reveal, transaction, origination, delegation, seed_nonce_revelation, activate_account]
-      - transaction
-      - endorsement
+    allow:
+      block:
+      endorsement:
+      preendorsement:
+      generic:
+        - transaction
+        - reveal
+        - delegation

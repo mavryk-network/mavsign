@@ -7,10 +7,10 @@ import (
 	"io/ioutil"
 	"strings"
 
-	config "github.com/mavryk-network/mavryk-signatory/pkg/config"
-	"github.com/mavryk-network/mavryk-signatory/pkg/errors"
-	"github.com/mavryk-network/mavryk-signatory/pkg/vault"
-	"github.com/mavryk-network/mavryk-signatory/pkg/vault/memory"
+	config "github.com/mavryk-network/mavsign/pkg/config"
+	"github.com/mavryk-network/mavsign/pkg/errors"
+	"github.com/mavryk-network/mavsign/pkg/vault"
+	"github.com/mavryk-network/mavsign/pkg/vault/memory"
 	"gopkg.in/yaml.v3"
 )
 
@@ -46,12 +46,12 @@ func init() {
 
 		content, err := ioutil.ReadFile(conf.File)
 		if err != nil {
-			return nil, fmt.Errorf("(File): %v", err)
+			return nil, fmt.Errorf("(File): %w", err)
 		}
 
 		var entries []*mavrykSecretJSONEntry
 		if err := json.Unmarshal(content, &entries); err != nil {
-			return nil, fmt.Errorf("(File): %v", err)
+			return nil, fmt.Errorf("(File): %w", err)
 		}
 
 		data := make([]*memory.UnparsedKey, len(entries))

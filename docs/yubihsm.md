@@ -11,13 +11,13 @@ _The YubiHSM 2 is a Hardware Security Module that is within reach of all organiz
 
 YubiHSM2 is a hardware-based HSM device. This device is suitable for use where you have access to your physical servers.
 
-## Setup with Signatory
+## Setup with MavSign
 
 ### Prerequisites
 
 In this guide, we use Docker for convenience, but you are not required to use Docker.
 
-This documentation assumes that you will be running Signatory and the YubiHSM2 device on the same physical server.
+This documentation assumes that you will be running MavSign and the YubiHSM2 device on the same physical server.
 
 * A Linux system operably configured with:
   * Docker
@@ -26,29 +26,29 @@ This documentation assumes that you will be running Signatory and the YubiHSM2 d
 
 ### Installing and using the YubiHSM Connector and Shell
 
-Signatory uses the `yubihsm-connector` daemon to interact with the YubiHSM USB device.
+MavSign uses the `yubihsm-connector` daemon to interact with the YubiHSM USB device.
 
 The connector requires you to have the libusb package installed on your system.
 
-```
-apt-get install libusb-1.0-0
+```bash
+apt install libusb-1.0-0
 ```
 
 To install the connector, find and install the 
 
-```
+```bash
 dpkg -i yubihsm-connector_2.1.0-1_amd64.deb
 ```
 
 To manage the YubiHSM2 device, you will need the `yubihsm-shell` utility. This utility requires the installation of the `libedit2` package.
 
-```
-apt-get install libedit2
+```bash
+apt install libedit2
 ```
 
-To install yubihsm-shell, you must install the yubihsm-shell package and the supporting YubiHSM2 libraries. The `yubihsm-shell` is not required for the operation of Signatory and is only for the management of the YubiHSM2 device.
+To install yubihsm-shell, you must install the yubihsm-shell package and the supporting YubiHSM2 libraries. The `yubihsm-shell` is not required for the operation of MavSign and is only for the management of the YubiHSM2 device.
 
-```
+```bash
 dpkg -i yubihsm-shell_2.0.2-1_amd64.deb \
     libyubihsm1_2.0.2-1_amd64.deb \
     libyubihsm-http1_2.0.2-1_amd64.deb \
@@ -65,7 +65,7 @@ yubihsm-connector
 
 Run the command `yubihsm-shell`. You will get a prompt that looks like:
 
-```
+```bash
 yubihsm>
 ```
 
@@ -73,19 +73,19 @@ To connect to the device, type `connect`. It will automatically connect to local
 
 To open a new session with the device type. The default password on the YubiHSM2 is "password".
 
-```
+```bash
 yubihsm> session open 1 password
 ```
 
 To list all objects on the device, run the command.
 
-```
-yubihsm> list objects 0 0
+```bash
+yubihsm> list objects 1 0
 ```
 
 ### Importing a Secret key into the YubiHSM2 for Mavryk
 
-To import a secret key, we will use the `signatory-cli` command.
+To import a secret key, we will use the `mavsign-cli` command.
 
 Here are six examples of private keys for test/evaluation purposes. Three encrypted (password is "test") and three unencrypted.
 
@@ -110,7 +110,7 @@ Here are six examples of private keys for test/evaluation purposes. Three encryp
       "unencrypted:edsk2rKA8YEExg9Zo2qNPiQnnYheF1DhqjLVmfKdxiFfu5GyGRZRnb" } ]
 ```
 
-The `signatory-cli` command needs a configuration file. The following will suffice;
+The `mavsign-cli` command needs a configuration file. The following will suffice;
 
 ```yaml
 server:
@@ -118,7 +118,6 @@ server:
   utility_address: localhost:9583
 
 vaults:
-  # Name is used to identify backend during import process
   yubi:
     driver: yubihsm
     config:
@@ -129,38 +128,39 @@ vaults:
 
 To import a secret key, we take the secret key from the above JSON examples. Do not include the "encrypted:" or "unencrypted:" prefix.
 
-```
-signatory-cli import --config ./signatory.yaml --vault yubi edsk2rKA8YEExg9Zo2qNPiQnnYheF1DhqjLVmfKdxiFfu5GyGRZRnb
+```bash
+mavsign-cli import --config ./mavsign.yaml --vault yubi
 ```
 
-If the import is successful, the `signatory-cli` will report the PKH of your newly imported secret:
+If the import is successful, the `mavsign-cli` will report the PKH of your newly imported secret:
 
-```
+```bash
 INFO[0000] Initializing vault                            vault=yubihsm vault_name=yubi
+Enter secret key: 
+Enter Password:
 INFO[0000] Requesting import operation                   pkh=tz1SBhzLDp9Jvg98ztMZMstaKbAENmzRd4Y7 vault=YubiHSM vault_name="localhost:12345/1"
 INFO[0000] Successfully imported                         key_id=0cf8 pkh=tz1SBhzLDp9Jvg98ztMZMstaKbAENmzRd4Y7 vault=YubiHSM vault_name="localhost:12345/1"
 ```
 
-If you import an encrypted key, the `signatory-cli` command will prompt you for a password.
+If you import an encrypted key, the `mavsign-cli` command will prompt you for a password.
 
 You can use the `yubihsm-shell` utility command `list objects 0 0` to verify that you can also see your newly imported secret within the YubiHSM2 device.
 
 ### Listing Mavryk Addresses in the YubiHSM2
 
-You can use the command `signatory-cli list` to list all keys in the YubiHSM2. `signatory-cli` also prints the configuration status for each address.
+You can use the command `mavsign-cli list` to list all keys in the YubiHSM2. `mavsign-cli` also prints the configuration status for each address.
 
-```
-signatory-cli -c ./signatory.yaml list
+```bash
+mavsign-cli -c ./mavsign.yaml list
 Public Key Hash:    tz1SBhzLDp9Jvg98ztMZMstaKbAENmzRd4Y7
 Vault:              YubiHSM
 ID:                 0cf8
 Status:             Disabled
 ```
 
-
 ### Configuring your newly imported address
 
-Add the PKH for your new secret into the `mavryk:` block of your `signatory.yaml` file as follows:
+Add the PKH for your new secret into the `mavryk:` block of your `mavsign.yaml` file as follows:
 
 ```yaml
 server:
@@ -168,32 +168,30 @@ server:
   utility_address: localhost:9583
 
 vaults:
-  # Name is used to identify backend during import process
   yubi:
     driver: yubihsm
     config:
-      address: localhost:12345 # Address for the yubihsm-connector
+      address: localhost:12345
       password: password
       auth_key_id: 1
 mavryk:
   tz1SBhzLDp9Jvg98ztMZMstaKbAENmzRd4Y7:
     log_payloads: true
-    allowed_operations:
-      - generic
-    allowed_kinds:
-      - origination
+    allow:
+      generic:
+        - origination
 ```
 
-Rerun the `signatory-cli list` command to verify that your new address is getting picked up, and is configured as you expect.
+Rerun the `mavsign-cli list` command to verify that your new address is getting picked up, and is configured as you expect.
 
-```
-signatory-cli -c ./signatory.yaml list
+```bash
+mavsign-cli -c ./mavsign.yaml list
 Public Key Hash:    tz1SBhzLDp9Jvg98ztMZMstaKbAENmzRd4Y7
 Vault:              YubiHSM
 ID:                 0cf8
 Status:             Active
 Allowed Operations: [generic]
-Allowed Kinds:      [ballot]
+Allowed Kinds:      [origination]
 ```
 
 [yubihsm]: https://www.yubico.com/products/hardware-security-module/ 

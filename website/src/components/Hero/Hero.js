@@ -5,13 +5,13 @@ const FeatureList = [
 	{
 		title: 'A Mavryk Remote Signer',
 		description: (
-			<>Signatory signs your Mavryk Ops while protecting your private keys</>
+			<>MavSign signs your Mavryk Ops while protecting your private keys</>
 		),
 		link: {
 			title: 'Get Started',
 			url: '/docs/start',
 		},
-		Image: require('../../../static/img/signatory-hero-img.png').default,
+		Image: require('../../../static/img/mavsign-hero-img.png').default,
 	},
 ];
 

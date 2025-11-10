@@ -2,11 +2,13 @@ package commands
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
-	"github.com/mavryk-network/mavryk-signatory/pkg/server"
-	"github.com/mavryk-network/mavryk-signatory/pkg/server/auth"
+	"github.com/mavryk-network/mavsign/pkg/auth"
+	"github.com/mavryk-network/mavsign/pkg/middlewares"
+	"github.com/mavryk-network/mavsign/pkg/server"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -21,11 +23,22 @@ func NewServeCommand(c *Context) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			srvConf := server.Server{
 				Address: c.config.Server.Address,
-				Signer:  c.signatory,
+				Signer:  c.mavsign,
+			}
+
+			if c.config.Server.JWTConfig != nil {
+				if c.config.Server.AuthorizedKeys != nil {
+					return fmt.Errorf("cannot use both JWT and static authorized keys")
+				}
+				mw := middlewares.NewMiddleware(c.config.Server.JWTConfig)
+				if err := c.config.Server.JWTConfig.CheckUpdateNewCred(); err != nil {
+					return err
+				}
+				srvConf.MidWare = mw
 			}
 
 			if c.config.Server.AuthorizedKeys != nil {
-				ak, err := auth.StaticAuthorizedKeysFromString(c.config.Server.AuthorizedKeys.List()...)
+				ak, err := auth.StaticAuthorizedKeys(c.config.Server.AuthorizedKeys.List()...)
 				if err != nil {
 					return err
 				}
@@ -39,7 +52,7 @@ func NewServeCommand(c *Context) *cobra.Command {
 
 			if !noList {
 				w := log.StandardLogger().Writer()
-				err := listKeys(c.signatory, w, c.Context)
+				err := listKeys(c.mavsign, w, c.Context)
 				w.Close()
 				if err != nil {
 					return err
@@ -54,7 +67,7 @@ func NewServeCommand(c *Context) *cobra.Command {
 
 			utilityConf := server.UtilityServer{
 				Address: c.config.Server.UtilityAddress,
-				Health:  c.signatory,
+				Health:  c.mavsign,
 			}
 			utilitySrv := utilityConf.New()
 			utilityErrCh := make(chan error)

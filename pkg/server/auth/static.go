@@ -4,7 +4,7 @@ import (
 	"context"
 	"crypto"
 
-	"github.com/mavryk-network/mavryk-signatory/pkg/mavryk"
+	"github.com/mavryk-network/mavsign/pkg/mavryk"
 )
 
 type staticAuthorizedKeys struct {

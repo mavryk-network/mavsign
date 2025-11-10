@@ -1,15 +1,17 @@
 module.exports = {
-	title: 'Signatory - A Mavryk Remote Signer',
-	tagline: 'Signatory signs your Mavryk Ops while protecting your private keys',
-	url: 'https://signatory.io',
+	title: 'MavSign - A Mavryk Remote Signer',
+	tagline: 'MavSign signs your Mavryk Ops while protecting your private keys',
+	url: 'https://mavsign.mavryk.org',
 	baseUrl: '/',
 	favicon: 'img/favicon.svg',
 	organizationName: 'ecadlabs', // Usually your GitHub org/user name.
-	projectName: 'signatory', // Usually your repo name.
+	projectName: 'mavsign', // Usually your repo name.
 	onBrokenLinks: 'warn',
+	markdown: {
+		mermaid: true,
+	},
+	themes: ['@docusaurus/theme-mermaid'],
 	themeConfig: {
-		autoCollapseSidebarCategories: true,
-
 		colorMode: {
 			defaultMode: 'light',
 			disableSwitch: true,
@@ -28,10 +30,15 @@ module.exports = {
 			// 	},
 			// },
 		},
+		docs: {
+			sidebar: {
+			  autoCollapseCategories: true,
+			},
+		},
 		navbar: {
 			// hideOnScroll: true,
 			logo: {
-				alt: 'Signatory Signer for Mavryk',
+				alt: 'MavSign Signer for Mavryk',
 				src: 'img/header-logo.svg',
 			},
 			items: [
@@ -43,7 +50,7 @@ module.exports = {
 					className: 'header-link button_link',
 				},
 				{
-					href: 'https://github.com/mavryk-network/mavryk-signatory',
+					href: 'https://github.com/mavryk-network/mavsign',
 					position: 'right',
 					className: 'header-link header-github-link',
 					'aria-label': 'GitHub repository',
@@ -57,11 +64,11 @@ module.exports = {
 					items: [
 						{
 							label: 'Report Issues',
-							to: 'https://github.com/mavryk-network/mavryk-signatory/issues/new/choose',
+							to: 'https://github.com/mavryk-network/mavsign/issues/new/choose',
 						},
 						{
 							label: 'Contribute',
-							to: 'https://github.com/mavryk-network/mavryk-signatory/blob/main/README.md',
+							to: 'https://github.com/mavryk-network/mavsign/blob/main/README.md',
 						},
 					],
 				},
@@ -71,19 +78,19 @@ module.exports = {
 					items: [
 						{
 							label: 'Discord',
-							to: 'https://discord.gg/eqZsXajr',
+							to: 'https://discord.gg/7tJ7f9eJHY',
 						},
 						{
 							label: 'Twitter',
-							to: 'https://twitter.com/tezostaqueria',
+							to: 'https://twitter.com/mavsignio',
 						},
 						{
 							label: 'Code of Conduct',
-							to: 'https://github.com/mavryk-network/mavryk-signatory/blob/main/CODE_OF_CONDUCT.md',
+							to: 'https://github.com/mavryk-network/mavsign/blob/main/CODE_OF_CONDUCT.md',
 						},
 						{
 							label: 'GitHub',
-							to: 'https://github.com/mavryk-network/mavryk-signatory',
+							to: 'https://github.com/mavryk-network/mavsign',
 						},
 					],
 				},
@@ -110,7 +117,7 @@ module.exports = {
 						},
 						{
 							html: `
-									<a class='footerButton' href='https://github.com/mavryk-network/mavryk-signatory'>
+									<a class='footerButton' href='https://github.com/mavryk-network/mavsign'>
 										GITHUB
 									</a>
 								  `,
@@ -130,7 +137,7 @@ module.exports = {
 				docs: {
 					path: '../docs',
 					sidebarPath: require.resolve('./sidebars.js'),
-					editUrl: 'https://github.com/mavryk-network/mavryk-signatory/edit/master/website/',
+					editUrl: 'https://github.com/mavryk-network/mavsign/edit/master/website/',
 				},
 				theme: {
 					customCss: [

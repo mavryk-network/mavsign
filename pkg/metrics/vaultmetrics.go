@@ -3,7 +3,7 @@ package metrics
 import (
 	"strconv"
 
-	"github.com/mavryk-network/mavryk-signatory/pkg/signatory"
+	"github.com/mavryk-network/mavsign/pkg/mavsign"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -32,7 +32,7 @@ var (
 		Name:    "vault_sign_request_duration_milliseconds",
 		Help:    "Vaults signing requests latencies in milliseconds",
 		Buckets: prometheus.ExponentialBuckets(10, 10, 5),
-	}, []string{"vault"})
+	}, []string{"vault", "address", "op"})
 
 	vaultErrorCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -41,12 +41,14 @@ var (
 		}, []string{"vault", "code"})
 )
 
-// Interceptor function collects sing operation metrics
-func Interceptor(opt *signatory.SignInterceptorOptions, sing func() error) error {
-	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(seconds float64) {
-		vaultSigningHist.WithLabelValues(opt.Vault).Observe(seconds * 1000)
-	}))
-	err := sing()
+// Interceptor function collects sign operation metrics
+func Interceptor(opt *mavsign.SignInterceptorOptions, sign func() error) error {
+	timer := prometheus.NewTimer(
+		prometheus.ObserverFunc(
+			func(seconds float64) {
+				vaultSigningHist.WithLabelValues(opt.Vault, string(opt.Address.ToBase58()), opt.Req).Observe(seconds * 1000)
+			}))
+	err := sign()
 	timer.ObserveDuration()
 
 	if err != nil {
@@ -59,8 +61,8 @@ func Interceptor(opt *signatory.SignInterceptorOptions, sing func() error) error
 		vaultErrorCounter.WithLabelValues(opt.Vault, code).Inc()
 	}
 
-	for _, k := range opt.Kind {
-		signingOpCount.WithLabelValues(opt.Address, opt.Vault, opt.Op, k).Inc()
+	for op, cnt := range opt.Stat {
+		signingOpCount.WithLabelValues(string(opt.Address.ToBase58()), opt.Vault, opt.Req, op).Add(float64(cnt))
 	}
 
 	return err

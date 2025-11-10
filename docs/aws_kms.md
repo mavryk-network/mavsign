@@ -3,34 +3,113 @@ id: aws_kms
 title: AWSKMS
 ---
 
+
 # AWS KMS Configuration
 
-Create an asymetric key with usage as "sign and verify" in your AWS account.
-Note: Support for "ECC_SECG_P256K1" spec is not there yet.
+Create an asymmetric key with usage as "sign and verify" in your AWS account.
 
-Search for IAM and create a user with "Programmatic access" for Signatory to access the key resources. Save the details at the end which will be given only once on creation of the user.
+Search for IAM and create a user with "Programmatic access" for MavSign to access the key resources. Save the details at the end which will be given only once on creation of the user.
 
 ## AWS KMS backend
 
-Below are the minimum configuration required.
+Below is the minimum configuration required.
 
-```sh
-awskms:
+```yaml
+vaults:
+  aws:
     driver: awskms
     config:
-      user_name: sigy-tsty
-      access_key_id: AKIATXBC6RIH4YZT5U6B
-      secret_access_key: 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
-      region: us-west-2
+      access_key_id: <aws_access_key_id>
+      secret_access_key: <aws_secret_access_key>
+      region: <aws_region>
 ```
 
 ### Configuration parameters
 
 Name | Type | Required | Description
 -----|------|:--------:|------------
-user_name | string |✅| IAM user name
 access_key_id | string | OPTIONAL | IAM user detail
 secret_access_key | string | OPTIONAL | IAM user detail
 region | string | ✅ | Region where key is created
 
 The fields `access_key_id` & `secret_access_key` can be set in the environment variables `AWS_ACCESS_KEY_ID` & `AWS_SECRET_ACCESS_KEY` respectively.
+
+## Importing a key into AWS
+
+The Import command is not available for AWS as there is no support for asymmetric keys in AWS KMS. (Ref: <https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html>) 
+
+## Key generation in AWS
+
+To generate a new private key withing AWS, you must:
+
+- Open up the KMS section of the AWS management console and click on "Customer Managed Keys"
+  - Click create key and make sure it contains the following:
+    - Asymmetric type
+    - Sign and Verify usage
+    - ECC_NIST_P256 key spec
+    - Single Region
+  - Ensure that the users who will need to access the key are added to the usage permissions list and create
+
+## Example Configuration for the AWS KMS vault in MavSign
+
+This example shows a MavSign vault configuration for AWS KMS. Text in `{}` must be replaced.
+
+
+```
+vaults:
+  # Name is used to identify backend during import process
+  awskms:
+    driver: awskms
+    config:
+      access_key_id: {Access_Key_ID_In_AWS_User_Profile}
+      secret_access_key: {Secret_access_Key_ID_In_AWS_User_Profile}
+      region: {AWS_Region}
+# This section is for public key hashes to define what is activated IRL
+mavryk:
+  # Default policy allows "block" and "endorsement" operations
+  {public_key_hash}:
+    log_payloads: true
+    allowed_operations:
+      # List of [generic, block, endorsement]
+      - generic
+      - block
+      - endorsement
+    allowed_kinds:
+      - transaction
+      - endorsement
+      - reveal
+      - delegation
+    authorized_keys:
+      # Allow sign operation only for clients specified below. Same syntax as `server/authorized_key`
+      - *authorized_key
+```
+
+### MavSign-cli features for AWS KMS
+
+Once you have MavSign binaries and the appropriate AWS pieces set up, it is time to test the connection between the hardware and MavSign. After completing the setup for the key and MavSign we can test it by using the mavsign-cli command `list`. Here is an example:
+```
+$ ./mavsign-cli list --help
+List public keys
+Usage:
+  mavsign-cli list [flags]
+Flags:
+  -h, --help   help for list
+Global Flags:
+  -c, --config string   Config file path (default "/etc/mavsign.yaml")
+      --log string      Log level: [error, warn, info, debug, trace] (default "info")
+      
+$ ./mavsign-cli list -c mavsign.yaml
+INFO[0000] Initializing vault                            vault=awskms vault_name=awskms
+Public Key Hash:    tz3WxgnteyTpM5YzJSTFFtnNYB8Du31gf3bQ
+Vault:              AWSKMS
+ID:                 arn:aws:kms:us-east-2:461830523399:key/038ec90c-1809-4320-9dc8-9cb05a8ef5bb
+Active:             true
+Allowed Operations: [block endorsement generic]
+Allowed Kinds:      [delegation endorsement reveal transaction]
+```
+
+### Final MavSign Verification Test
+We can finally see that all the pieces are working together by curling the MavSign service and asking for the public key associated with our active public key hash:
+`curl http://localhost:6732/keys/tz3WxgnteyTpM5YzJSTFFtnNYB8Du31gf3bQ`
+
+The output can be verified by checking the public_keys file in the .mavryk-client directory

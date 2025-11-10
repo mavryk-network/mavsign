@@ -3,7 +3,7 @@ package commands
 import (
 	"fmt"
 
-	"github.com/mavryk-network/mavryk-signatory/pkg/metrics"
+	"github.com/mavryk-network/mavsign/pkg/metrics"
 	"github.com/spf13/cobra"
 )
 
@@ -11,7 +11,7 @@ func NewVersionCommand(c *Context) *cobra.Command {
 	listCmd := &cobra.Command{
 		Use:     "version",
 		Aliases: []string{"v"},
-		Short:   "Show signatory image version/release (short alias 'v') ",
+		Short:   "Show mavsign image version/release (short alias 'v') ",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var vout string
 			if metrics.GitRevision != metrics.GitBranch {

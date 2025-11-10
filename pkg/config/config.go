@@ -1,30 +1,41 @@
 package config
 
 import (
-	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"os"
 
+	"github.com/mavryk-network/mavbingo/v2/crypt"
+	"github.com/mavryk-network/mavsign/pkg/hashmap"
+	"github.com/mavryk-network/mavsign/pkg/middlewares"
 	"github.com/go-playground/validator/v10"
 	yaml "gopkg.in/yaml.v3"
 )
 
-// ServerConfig contains the information necessary to the mavryk signing server
-type ServerConfig struct {
-	Address        string          `yaml:"address" validate:"hostname_port"`
-	UtilityAddress string          `yaml:"utility_address" validate:"hostname_port"`
+// PolicyHook is an external service for secondary validation of sign requests
+type PolicyHook struct {
+	Address        string          `yaml:"address"`
 	AuthorizedKeys *AuthorizedKeys `yaml:"authorized_keys"`
 }
 
+// ServerConfig contains the information necessary to the mavryk signing server
+type ServerConfig struct {
+	Address        string           `yaml:"address" validate:"hostname_port"`
+	UtilityAddress string           `yaml:"utility_address" validate:"hostname_port"`
+	AuthorizedKeys *AuthorizedKeys  `yaml:"authorized_keys"`
+	JWTConfig      *middlewares.JWT `yaml:"jwt"`
+}
+
 // MavrykConfig contains the configuration related to mavryk network
-type MavrykConfig map[string]*MavrykPolicy
+type MavrykConfig = hashmap.PublicKeyHashMap[*MavrykPolicy]
 
 // MavrykPolicy contains policy definition for a specific address
 type MavrykPolicy struct {
-	AllowedOperations []string        `yaml:"allowed_operations" validate:"dive,oneof=generic block endorsement"`
-	AllowedKinds      []string        `yaml:"allowed_kinds" validate:"dive,oneof=endorsement seed_nonce_revelation double_endorsement_evidence double_baking_evidence activate_account ballot proposals reveal transaction origination delegation"`
-	LogPayloads       bool            `yaml:"log_payloads"`
-	AuthorizedKeys    *AuthorizedKeys `yaml:"authorized_keys"`
+	Allow             map[string][]string `yaml:"allow"`
+	AllowedOperations []string            `yaml:"allowed_operations"`
+	AllowedKinds      []string            `yaml:"allowed_kinds"`
+	LogPayloads       bool                `yaml:"log_payloads"`
+	AuthorizedKeys    *AuthorizedKeys     `yaml:"authorized_keys"`
+	JwtUsers          []string            `yaml:"jwt_users"`
 }
 
 // VaultConfig represents single vault instance
@@ -33,12 +44,20 @@ type VaultConfig struct {
 	Config yaml.Node `yaml:"config"`
 }
 
-// Config contains all the configuration necessary to run the signatory
+// Config contains all the configuration necessary to run the mavsign
 type Config struct {
-	Vaults  map[string]*VaultConfig `yaml:"vaults" validate:"dive,required"`
-	Mavryk  MavrykConfig            `yaml:"mavryk" validate:"dive,keys,startswith=mv1|startswith=mv2|startswith=mv3,len=36,endkeys"`
-	Server  ServerConfig            `yaml:"server"`
-	BaseDir string                  `yaml:"base_dir" validate:"required"`
+	Vaults     map[string]*VaultConfig `yaml:"vaults" validate:"dive,required"`
+	Mavryk      MavrykConfig             `yaml:"mavryk"`
+	Server     ServerConfig            `yaml:"server"`
+	PolicyHook *PolicyHook             `yaml:"policy_hook"`
+	BaseDir    string                  `yaml:"base_dir" validate:"required"`
+	Watermark  *WatermarkConfig        `yaml:"watermark"`
+}
+
+// WatermarkConfig represents watermark backend configuration
+type WatermarkConfig struct {
+	Driver string    `yaml:"driver" validate:"required"`
+	Config yaml.Node `yaml:"config"`
 }
 
 var defaultConfig = Config{
@@ -46,19 +65,21 @@ var defaultConfig = Config{
 		Address:        ":6732",
 		UtilityAddress: ":9583",
 	},
-	BaseDir: "/var/lib/signatory",
+	BaseDir: "/var/lib/mavsign",
+	Watermark: &WatermarkConfig{
+		Driver: "file",
+	},
 }
 
 // Read read the config from a file
 func (c *Config) Read(file string) error {
-	yamlFile, err := ioutil.ReadFile(file)
+	yamlFile, err := os.ReadFile(file)
 	if err != nil {
 		return err
 	}
 	if err = yaml.Unmarshal(yamlFile, c); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -73,40 +94,35 @@ func Validator() *validator.Validate {
 
 // AuthorizedKeys keeps list of authorized public keys
 type AuthorizedKeys struct {
-	value string
+	value crypt.PublicKey
 	list  []*AuthorizedKeys
 }
 
 // List returns all keys as a string slice
-func (a *AuthorizedKeys) List() []string {
+func (a *AuthorizedKeys) List() []crypt.PublicKey {
 	if a.list != nil {
-		var ret []string
+		var ret []crypt.PublicKey
 		for _, v := range a.list {
 			ret = append(ret, v.List()...)
 		}
 		return ret
 	}
-	return []string{a.value}
+	return []crypt.PublicKey{a.value}
 }
 
 // UnmarshalYAML implements yaml.Unmarshaler
-func (a *AuthorizedKeys) UnmarshalYAML(value *yaml.Node) error {
-	var target interface{}
+func (a *AuthorizedKeys) UnmarshalYAML(value *yaml.Node) (err error) {
 	switch value.Kind {
 	case yaml.ScalarNode:
-		target = &a.value
+		var pub crypt.PublicKey
+		pub, err = crypt.ParsePublicKey([]byte(value.Value))
+		a.value = pub
+
 	case yaml.SequenceNode:
-		target = &a.list
+		err = value.Decode(&a.list)
+
 	default:
 		return errors.New("can't decode YAML node")
 	}
-	if err := value.Decode(target); err != nil {
-		return err
-	}
-	return nil
-}
-
-// MarshalJSON implements json.Marshaler
-func (a *AuthorizedKeys) MarshalJSON() ([]byte, error) {
-	return json.Marshal(a.List())
+	return err
 }

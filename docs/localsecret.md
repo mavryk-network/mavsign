@@ -4,38 +4,34 @@ title: File-Based Secret Storage (Insecure)
 ---
 
 
-Signatory file-based signer mode allows operation without an HSM or Key Vault service for evaluation and prototyping purposes. By storing the secret key material in a JSON file, users can get Signatory up and running quickly for evaluation and development purposes.
+MavSign file-based signer mode allows operation without an HSM or Key Vault service for evaluation and prototyping purposes. By storing the secret key material in a JSON file, users can get MavSign up and running quickly for evaluation and development purposes.
 
-## Signatory configuration for file-based secret storage
+## MavSign configuration for file-based secret storage
 
-This documentation assumes you will use the official Signatory docker image, and that you have a working Linux server with docker installed.
+This documentation assumes you will use the official MavSign docker image, and that you have a working Linux server with docker installed.
 
-Place the following YAML in a file named `signatory.yaml`
+Place the following YAML in a file named `mavsign.yaml`
 
 ```yaml
 server:
-  # Address/Port that Signatory listens on
   address: :6732
-  # Address/Port that Signatory serves prometheus metrics on
   utility_address: :9583
 
 vaults:
-# Name of vault
-  local_file_keys:
+  local_secret:
     driver: file
     config:
       file: /etc/secret.json
 
-# List enabled public keys hashes here
 mavryk:
-  # Default policy allows "block" and "endorsement" operations
   mv19VEmW4zEELeQiBqLHH4RHgysYuLe4P6xt:
     log_payloads: true
-    allowed_operations:
-    # List of [generic, block, endorsement]
-    - generic
-    - block
-    - endorsement
+    allow:
+      block:
+      endorsement:
+      preendorsement:
+      generic:
+        - transaction
 ```
 
 The `mv19VEmW4zEELeQiBqLHH4RHgysYuLe4P6xt` key corresponds to the secret key that you will put in `/etc/secret.json`
@@ -43,32 +39,35 @@ The `mv19VEmW4zEELeQiBqLHH4RHgysYuLe4P6xt` key corresponds to the secret key tha
 Contents of `secret.json` is:
 
 ```json
-[ { "name": "your_secret_key",
-    "value":
-      "unencrypted:edsk3DYwZpPmbNTRSdJW2wBeHoneNqjPt9Xj49Fnhcir6q47JpD5Vz" } ]
+[ 
+  { 
+    "name": "<address_alias>",
+    "value": "unencrypted:<your_secret_key>" 
+  }
+]
 ```
 
-### Running Signatory
+### Running MavSign
 
-Next, you want to run the signatory docker image as follows:
+Next, you want to run the mavsign docker image as follows:
 
-_Remember to secure the network where Signatory is running_
+_Remember to secure the network where MavSign is running_
 
 ```sh
 docker run -it --rm \
-    -v "$(realpath signatory.yaml):/etc/signatory.yaml" \
+    -v "$(realpath mavsign.yaml):/etc/mavsign.yaml" \
     -v "$(realpath secret.json):/etc/secret.json" \
     -p 6732:6732 \
     -p 9583:9583 \
-    mavrykdynamics/mavryk-signatory:latest serve -c /etc/signatory.yaml
+    mavrykdynamics/mavsign:latest serve -c /etc/mavsign.yaml
 ```
 
-### Verify that Signatory is working
+### Verify that MavSign is working
 
-You can test that Signatory works, making a GET request using the Public Key Hash (PKH). Signatory will return a JSON payload containing the public key.
+You can test that MavSign works, making a GET request using the Public Key Hash (PKH). MavSign will return a JSON payload containing the public key.
 
 ```sh
-curl signatory:6732/keys/mv19VEmW4zEELeQiBqLHH4RHgysYuLe4P6xt
+curl mavsign:6732/keys/mv19VEmW4zEELeQiBqLHH4RHgysYuLe4P6xt
 ```
 
 A response such as the following should be expected:
@@ -82,7 +81,7 @@ You can test the signing functionality by making a POST request as follows:
 ```sh
 curl -XPOST \
     -d '"027a06a770e6cebe5b3e39483a13ac35f998d650e8b864696e31520922c7242b88c8d2ac55000003eb6d"' \
-    signatory:6732/keys/mv19VEmW4zEELeQiBqLHH4RHgysYuLe4P6xt
+    mavsign:6732/keys/mv19VEmW4zEELeQiBqLHH4RHgysYuLe4P6xt
 ```
 
 Which should return an HTTP 200 OK with a payload similar to:

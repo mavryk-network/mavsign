@@ -1,0 +1,35 @@
+[ { "name": "alice",
+    "value":
+      { "locator":
+          "http://mavsign:6732/mv1Hox9jGJg3uSmsv9NTvuK7rMHh25cq44nv",
+        "key": "edpkvGfYw3LyB1UcCahKQk4rF2tvbMUk8GFiTuMjL75uGXrpvKXhjn" } },
+  { "name": "bob",
+    "value":
+      { "locator":
+          "http://mavsign:6732/mv1NpEEq8FLgc2Yi4wNpEZ3pvc1kUZrp2JWU",
+        "key": "edpkurPsQ8eUApnLUJ9ZPDvu98E8VNj4KtJa1aZr16Cr5ow5VHKnz4" } },
+  { "name": "opstest",
+    "value":
+      { "locator":
+          "http://mavsign:6732/mv1Dgk11ZRkuwUJTpGYgohPJ2WXq82v6yC7v",
+        "key": "edpkvSkEEfVMKvAv87env4kMNwLfuLYe7y7wXqgfvrwJwhJJpmL1GB" } },
+  { "name": "opstest1",
+    "value":
+      { "locator":
+          "http://mavsign:6732/mv1DVkbxJrvuihcZM5MoteqxEsJaHDmexMTw",
+        "key": "edpktfLxRbpLeFjL49Rz2xtBwPaSfdZ7ZL6W3idm2JaMTP93RwmCdo" } },
+  { "name": "speculos",
+    "value":
+      { "locator":
+          "http://mavsign:6732/mv1Ds1st3Atpto8tSNg6MFRz76ksbik4JkcF",
+        "key": "edpktsKqhvR7kXbRWD7yDgLSD7PZUXvjLqf9SFscXhL52pUStF5nQp" } },
+  { "name": "mv2alias",
+    "value":
+      { "locator":
+          "http://mavsign:6732/mv2c6wrWBXebgoBMz5fVCoxKdyYyQoDHdvrL",
+        "key": "sppk7cvVVMRRtYTdriTB6KQqpXZt9TUwSTcpMWq4FwpvG2eVZ56UuHP" } },
+  { "name": "mv4alias",
+    "value":
+      { "locator":
+          "http://mavsign:6732/mv4jEyAFCa4Cc8cuidAPGm8CfwNAwmmwcWoR",
+        "key": "BLpk1nRV5SBB2QCxsiem5Neoywcizr3mkdp167HL1iKFgFvzPhKo4RSy7J8JBh2BgGgVYjNsRGwU" } } ]

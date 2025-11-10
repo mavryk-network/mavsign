@@ -9,19 +9,19 @@ const FeatureList = [
 				icon: require('../../../static/img/hand.svg').default,
 				title: 'Easy to start, trivial to secure',
 				description:
-					'Start prototyping your infrastructure with an on-disk key, switch to an HSM when it makes sense.',
+					'Start by prototyping your infrastructure with an on-disk key, switch to an HSM when it makes sense.',
 			},
 			{
 				icon: require('../../../static/img/book.svg').default,
-				title: 'Signatory signs only the operations you want',
+				title: 'MavSign signs only the operations you want',
 				description:
-					'Set policy on the type of Mavryk Operations you want to allow signing. Are you running a baker? Limit it to blocks and endorsements. Institution? Signatory can enforce policies.',
+					'Set policy on the type of Mavryk Operations you want to allow signing. Are you running a baker? Limit it to blocks and endorsements. Institution? MavSign can enforce policies.',
 			},
 			{
 				icon: require('../../../static/img/lenz.svg').default,
 				title: 'Built with observability',
 				description:
-					'Critical infrastructure monitoring is crucial. Signatory exposes operational metrics for Prometheus allowing teams to monitor operations with the tools they have already invested in.',
+					'Critical infrastructure monitoring is crucial. MavSign exposes operational metrics for Prometheus allowing teams to monitor operations with the tools they have already invested in.',
 			},
 		],
 	},

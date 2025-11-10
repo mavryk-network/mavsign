@@ -1,14 +1,17 @@
 package ledger
 
 import (
+	"bytes"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"sync"
 
-	"github.com/mavryk-network/mavryk-signatory/pkg/mavryk"
-	"github.com/mavryk-network/mavryk-signatory/pkg/vault/ledger/ledger"
-	"github.com/mavryk-network/mavryk-signatory/pkg/vault/ledger/mavrykapp"
+	"github.com/mavryk-network/mavbingo/v2/encoding"
+	"github.com/mavryk-network/mavsign/pkg/vault/ledger/ledger"
+	"github.com/mavryk-network/mavsign/pkg/vault/ledger/mnemonic"
+	"github.com/mavryk-network/mavsign/pkg/vault/ledger/mavrykapp"
+	log "github.com/sirupsen/logrus"
 )
 
 type deviceInfo struct {
@@ -46,20 +49,19 @@ func (s *scanner) openPath(path string) (app *mavrykapp.App, dev *deviceInfo, er
 		return nil, nil, err
 	}
 
-	hash, err := mavryk.GetPublicKeyHash(rootPK)
-	if err != nil {
+	var buf bytes.Buffer
+	pkh := rootPK.Hash()
+	// pass pointer to interface to preserve type information to encode correctly
+	if err := encoding.Encode(&buf, &pkh); err != nil {
 		return nil, nil, err
 	}
+	id := mnemonic.New(buf.Bytes())
 
-	pkh, err := mavryk.EncodePublicKeyHash(rootPK)
-	if err != nil {
-		return nil, nil, err
-	}
-
+	hash := pkh.PublicKeyHash()
 	dev = &deviceInfo{
 		Path:    path,
 		Version: ver,
-		ID:      pkh,
+		ID:      id.String(),
 		ShortID: hex.EncodeToString(hash[:4]),
 	}
 	return app, dev, nil
@@ -106,6 +108,7 @@ func (s *scanner) scan() ([]*deviceInfo, error) {
 	for _, d := range devs {
 		app, dev, err := s.openPath(d.Path)
 		if err != nil {
+			log.Warnf("%s: %v", d.Path, err)
 			continue
 		}
 		app.Close()

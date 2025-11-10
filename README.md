@@ -1,73 +1,105 @@
-![Signatory Logo](/docs/signatory-logo.png "Signatory Logo")
+![MavSign Logo](/docs/mavsign-logo.png "MavSign Logo")
 
 #### A Mavryk Remote Signer
 
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/2778/badge)](https://bestpractices.coreinfrastructure.org/projects/2778)
-[![GitHub Actions](https://github.com/mavryk-network/mavryk-signatory/workflows/Test%20and%20publish/badge.svg)](https://github.com/mavryk-network/mavryk-signatory/actions)
-[![Maintainability](https://api.codeclimate.com/v1/badges/c1304869331b687e0aba/maintainability)](https://codeclimate.com/github/mavryk-network/mavryk-signatory/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/c1304869331b687e0aba/test_coverage)](https://codeclimate.com/github/mavryk-network/mavryk-signatory/test_coverage)
-[![Go Report Card](https://goreportcard.com/badge/github.com/mavryk-network/mavryk-signatory)](https://goreportcard.com/report/github.com/mavryk-network/mavryk-signatory)
+[![GitHub Actions](https://github.com/mavryk-network/mavsign/workflows/Test%20and%20publish/badge.svg)](https://github.com/mavryk-network/mavsign/actions)
+[![Maintainability](https://api.codeclimate.com/v1/badges/c1304869331b687e0aba/maintainability)](https://codeclimate.com/github/mavryk-network/mavsign/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/c1304869331b687e0aba/test_coverage)](https://codeclimate.com/github/mavryk-network/mavsign/test_coverage)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mavryk-network/mavsign)](https://goreportcard.com/report/github.com/mavryk-network/mavsign)
 
-_WARNING: This project is in active development. While we welcome users and feedback, please be warned that this project is a work in progress, and users should proceed with caution._
+## What is MavSign?
 
-## What is Signatory?
+MavSign is a remote signing daemon that allows Mavryk bakers and Mavryk Application teams to protect their private keys.
 
-Signatory is a remote signing daemon that allows people running Mavryk bakers to securely sign endorsement and baking operations with a variety of different key management systems.
+The goal of the MavSign service is to make key management as secure as possible in a Cloud and on-premise HSM context.
 
-The goal of the Signatory service is to make key management as secure as possible in a Cloud and on-premise HSM context.
+## Why Use MavSign?
 
-## Why Use Signatory?
-
-Security and convenience are typically at odds with each other. Signatory makes it easier for Mavryk node operators to manage their keys securely by offering several well-tested & supported signing options for cloud-based or hardware-based HSMs.
+Security and convenience are typically at odds with each other. MavSign makes it easier for Mavryk teams to manage their keys securely by offering several well-tested & supported signing options for cloud-based or hardware-based HSMs.
 
 ## Quick Start
 
-[See docs](/docs/README.md)
+[See docs](https://mavsign.mavryk.org/docs/start/)
 
 ---
+
+## GitHub Docs
+
+Explore detailed documentation for various components of MavSign:
+
+### Introduction
+- [Getting Started](./docs/start.md)
+- [Authorized Keys](./docs/authorized_keys.md)
+- [Command-Line Interface (CLI)](./docs/cli.md)
+- [Bakers](./docs/bakers.md)
+
+### Vault Backends
+- [Azure KMS](./docs/azure_kms.md)
+- [AWS KMS](./docs/aws_kms.md)
+- [Google Cloud KMS](./docs/gcp_kms.md)
+- [Hashicorp Vault](./docs/hashicorp_vault.md)
+- [Ledger Integration](./docs/ledger.md)
+- [Local Secret Storage](./docs/localsecret.md)
+- [PKCS#11 (AWS CloudHSM compatible)](./docs/pkcs11.md)
+- [YubiHSM](./docs/yubihsm.md)
+
+### Watermark backends 
+- [AWS (DynamoDB)](./docs/aws_dynamodb.md)
+
+### Other
+- [JWT Authentication](./docs/jwt_auth.md)
+- [Remote Policy Configuration](./docs/remote_policy.md)
+- [MavSign Architecture](./docs/mavsign-architecture.md)
 
 ## Features
 
 ### Remote Signing
 
-Signatory receives signing requests from either a baker or an endorser, signs the data using one of its backends, and returns a signature.
+MavSign receives requests to sign Mavryk operations. These operations may be consensus operations when used in a Baking context, or they may be transactions or any other Mavryk operation type.
+
+MavSign will inspect the operations and assert that the operation request is in line with MavSign's policy. If the operation passes the policy rules, MavSign will then have a signature produced using the appropriate backend system. 
+
+MavSign operators can choose from AWS, Azure or Google Cloud KMS systems, or self-hosted solutions such as the YubiHSM2, Hashicorp Vault or Ledger Hardware wallet.
 
 ### Observability
 
-Signatory is also focused on observability, meaning that it exposes metrics about its operations. Metrics allow operators to see historical trends, signing volumes, errors and latencies, enabling rich reporting and alerting capabilities.
+MavSign is also focused on observability, exposing metrics about its performance, volume and possible errors. Metrics allow operators to see historical trends, signing volumes, errors and latencies, enabling rich reporting and alerting capabilities.
 
 ### Private-Key Import
 
-Private-key import is an important security consideration when choosing a Cloud HSM offering. Some HSMs allow you to generate the secret key internally so that no one can extract the private key from the HSM. Others allow for private-key import with different levels of security. The trade-offs in this context are essential to understand.
+Private-key import is an important security consideration when choosing a Cloud KMS offering. Some KMS's allow you to generate the secret key internally so that no one can extract the private key from the HSM. Others allow for private-key import with different levels of security. The trade-offs in this context are essential to understand.
 
 ---
 
 ## How it Works
 
-* Mavryk sends a signing request to Signatory
-* Signatory checks that the operation is either `block` or `endorsement`
-* Signatory sends the operation to the configured backend for singing
-* Upon receiving the signing operation from the backend, Signatory validates the signature with a Mavryk node (optional)
-* Signatory returns the operation signature to the Mavryk node
+* A Mavryk operation is sent to the MavSign API
+* MavSign decodes and checks that the operation is permitted based on the defined policy
+* MavSign sends the operation to the configured vault backend for signing
+* Upon receiving the signature produced by backend, MavSign validates the signature
+* MavSign returns the signature to MavSign client
+
+
+## Why
+
+Our goal in supporting multiple Cloud KMS/HSM services is to help prevent centralization on the _network_ or _infrastructure_ level. A goal of Mavryk is to have a highly decentralized network of bakers. That goal is not fully realized if, of those bakers, a large majority operate on a single infrastructure provider.
+
+In the first year of the Mavryk network operation, there was anecdotal evidence that many bakers ran on AWS. AWS is a superb provider, but having a concentration of nodes on one cloud vendor centralizes the underlying infrastructure of the network, which is not desirable. By supporting multiple Cloud KMS/HSM systems, we hope to prevent the network from centralization on a particular Cloud offering.
 
 ## Supported Signing Backends
 
-Signatory currently supports [Azure Key Vault][0]. Other backend signing services are either in the planning phase or are currently in development.
-
-We are adding support for additional backend Key Management Systems (KMS) for the secure handling of private keys. Most cloud-based KMS systems offer an HSM-backed mode, which we strongly recommend.
-
-Our goal in supporting multiple Cloud KMS/HSM services is to help in preventing centralization on the _network_ or _infrastructure_ level. A goal of Mavryk is to have a highly decentralized network of bakers. That goal is not fully realized if, of those bakers, a large majority operate on a single infrastructure provider.
-
-In the first year of the Mavryk network operation, there was anecdotal evidence that a large percentage of bakers run on AWS. AWS is a superb provider, but having a concentration of nodes on one cloud vendor centralizes the underlying infrastructure of the network, which is not desirable. By supporting multiple Cloud KMS/HSM systems, we hope to prevent the network from centralization on a particular Cloud offering.
-
 ### Backend KMS/HSM Support Status
 
-|                  | Status      |
-| ---------------- | ----------- |
-| YubiHSM2         | Implemented |
-| Azure KMS        | In Testing  |
-| Google Cloud KMS | In Testing  |
-| AWS KMS          | Planned     |
+|                                | Status |
+| ------------------------------ | ------ |
+| YubiHSM2                       | ✅     |
+| Azure KMS                      | ✅     |
+| Google Cloud KMS               | ✅     |
+| AWS KMS                        | ✅     |
+| Ledger Nano S/S+ (Baking only) | ✅     |
+| Hashicorp Vault                | ✅     |
+| PKCS#11                        | ✅     |
 
 ### Mavryk Address Types
 
@@ -76,15 +108,18 @@ In Mavryk, you can infer the signing algorithm from the first three characters o
 * `mv1` - [Ed25519](https://ed25519.cr.yp.to/)
 * `mv2` - [Secp256k1](https://en.bitcoin.it/wiki/Secp256k1) __aka: P256K__
 * `mv3` - P-256
+* `mv4` - BLS12-381
 
 ## Signing Algorithm Support From Various Backends
 
 |                  | mv1 | mv2 | mv3 |
 | ---------------- | --- | --- | --- |
+| Hashicorp Vault  | ✅   | ❌   | ❌   |
 | Google Cloud KMS | ❌   | ❌   | ✅   |
 | AWS KMS          | ❌   | ✅   | ✅   |
 | Azure KMS        | ❌   | ✅   | ✅   |
 | YubiHSM2         | ✅   | ✅   | ✅   |
+| PKCS#11          | ✅   | ✅   | ✅   |
 
 ---
 
@@ -92,29 +127,19 @@ In Mavryk, you can infer the signing algorithm from the first three characters o
 
 ### Security Issues
 
-To report a security issue, please contact security@ecadlabs.com or via [keybase/jevonearth][1] on keybase.io.
-
-Reports may be encrypted using keys published on keybase.io using [keybase/jevonearth][1].
+To report a security issue, please contact security@ecadlabs.com
 
 ### Other Issues & Feature Requests
 
-Please use the [GitHub issue tracker](https://github.com/mavryk-network/mavryk-signatory/issues) to report bugs or request features.
+Please use the [GitHub issue tracker](https://github.com/mavryk-network/mavsign/issues) to report bugs or request features.
 
 ## Contributions
 
 To contribute, please check the issue tracker to see if an issue exists for your planned contribution. If there's no issue, please create one first, and then submit a pull request with your contribution.
 
-For a contribution to be merged, it is required to have complete documentation, come with unit tests and integration tests where appropriate. Submitting a "work in progress" pull request is welcome!
+For a contribution to be merged, it is required to have complete documentation and come with unit tests and integration tests where appropriate. Submitting a "work in progress" pull request is welcome!
 
 ---
-
-## Alternative Remote Signers
-
-At least three other remote signers are available to use with Mavryk. Mavryk also provides native support for baking with a Ledger Nano. We encourage bakers to, at a minimum, review these projects. We are eager to collaborate and be peers with these great projects.
-
-* [Tezzigator's Azure remote signer](https://github.com/tezzigator/azure-tezos-signer)
-* [Tacoinfra's remote signer](https://github.com/tacoinfra/remote-signer)
-* [Polychain Labs' remote signer](https://gitlab.com/polychainlabs/tezos-hsm-signer)
 
 ## Disclaimer
 
@@ -130,4 +155,5 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 OF SUCH DAMAGE.
 
 [0]: https://azure.microsoft.com/en-ca/services/key-vault/
-[1]: https://keybase.io/jevonearth
+
+

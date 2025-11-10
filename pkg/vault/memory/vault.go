@@ -3,31 +3,18 @@ package memory
 
 import (
 	"context"
-	"crypto"
 	"fmt"
-	"net/http"
 	"sync"
 
-	"github.com/mavryk-network/mavryk-signatory/pkg/cryptoutils"
-	"github.com/mavryk-network/mavryk-signatory/pkg/errors"
-	"github.com/mavryk-network/mavryk-signatory/pkg/mavryk"
-	"github.com/mavryk-network/mavryk-signatory/pkg/utils"
-	"github.com/mavryk-network/mavryk-signatory/pkg/vault"
+	"github.com/mavryk-network/mavbingo/v2/b58"
+	"github.com/mavryk-network/mavbingo/v2/crypt"
+	"github.com/mavryk-network/mavsign/pkg/utils"
+	"github.com/mavryk-network/mavsign/pkg/vault"
 )
 
 type PrivateKey struct {
-	PrivateKey cryptoutils.PrivateKey
-	KeyID      string
-}
-
-// PublicKey get the public key associated with this key
-func (f *PrivateKey) PublicKey() crypto.PublicKey {
-	return f.PrivateKey.Public()
-}
-
-// ID get the id of this file key
-func (f *PrivateKey) ID() string {
-	return f.KeyID
+	Key crypt.PrivateKey
+	ID  string
 }
 
 type UnparsedKey struct {
@@ -35,28 +22,28 @@ type UnparsedKey struct {
 	ID   string
 }
 
+type keyRef struct {
+	*PrivateKey
+	v *Vault
+}
+
+func (k *keyRef) PublicKey() crypt.PublicKey { return k.Key.Public() }
+func (k *keyRef) Vault() vault.Vault         { return k.v }
+func (k *keyRef) Sign(ctx context.Context, message []byte) (sig crypt.Signature, err error) {
+	signature, err := k.Key.Sign(message)
+	if err != nil {
+		return nil, fmt.Errorf("(%s): %w", k.v.name, err)
+	}
+	return signature, nil
+}
+
 // Vault is a file system based vault
 type Vault struct {
 	raw      []*UnparsedKey
 	keys     []*PrivateKey
-	index    map[string]*PrivateKey
 	mtx      sync.Mutex
 	name     string
 	unlocked bool
-}
-
-type iterator struct {
-	keys []*PrivateKey
-	idx  int
-}
-
-func (i *iterator) Next() (key vault.StoredKey, err error) {
-	if i.idx == len(i.keys) {
-		return nil, vault.ErrDone
-	}
-	key = i.keys[i.idx]
-	i.idx++
-	return key, nil
 }
 
 // NewUnparsed create a new in-mempory vault from Mavryk encoded data. Call Unlock before use
@@ -71,77 +58,39 @@ func NewUnparsed(data []*UnparsedKey, name string) *Vault {
 }
 
 // New create a new in-mempory vault. Call Unlock before use
-func New(src []*PrivateKey, name string) (*Vault, error) {
+func New(keys []*PrivateKey, name string) (*Vault, error) {
 	if name == "" {
 		name = "Mem"
 	}
-
-	keys := make([]*PrivateKey, len(src))
-	index := make(map[string]*PrivateKey, len(src))
-
-	for i, k := range src {
-		var key *PrivateKey
-		if k.KeyID != "" {
-			key = k
-		} else {
-			id := k.KeyID
-			var err error
-			if id == "" {
-				id, err = mavryk.EncodePublicKeyHash(k.PrivateKey.Public())
-				if err != nil {
-					return nil, fmt.Errorf("(%s): %v", name, err)
-				}
-			}
-			key = &PrivateKey{
-				PrivateKey: k.PrivateKey,
-				KeyID:      id,
-			}
-		}
-		keys[i] = k
-		index[key.KeyID] = k
-	}
-
 	return &Vault{
 		name:     name,
 		keys:     keys,
-		index:    index,
 		unlocked: true,
 	}, nil
 }
 
-// ListPublicKeys list all public key available on disk
-func (v *Vault) ListPublicKeys(ctx context.Context) vault.StoredKeysIterator {
+// List list all public key available on disk
+func (v *Vault) List(ctx context.Context) vault.KeyIterator {
 	v.mtx.Lock()
 	defer v.mtx.Unlock()
-	return &iterator{keys: v.keys}
-}
 
-// GetPublicKey retrieve a public key
-func (v *Vault) GetPublicKey(ctx context.Context, keyID string) (vault.StoredKey, error) {
-	v.mtx.Lock()
-	defer v.mtx.Unlock()
-	key, ok := v.index[keyID]
-	if !ok {
-		return nil, errors.Wrap(fmt.Errorf("(%s): key not found in vault: %s", v.name, keyID), http.StatusNotFound)
-	}
-	return key, nil
+	snap := v.keys
+	i := 0
+	return vault.IteratorFunc(func() (key vault.KeyReference, err error) {
+		if i >= len(snap) {
+			return nil, vault.ErrDone
+		}
+		k := &keyRef{
+			PrivateKey: snap[i],
+			v:          v,
+		}
+		i++
+		return k, nil
+	})
 }
 
 // Name returns backend name
 func (v *Vault) Name() string { return v.name }
-
-// Sign sign using the specified key
-func (v *Vault) Sign(ctx context.Context, digest []byte, k vault.StoredKey) (sig cryptoutils.Signature, err error) {
-	key, ok := k.(*PrivateKey)
-	if !ok {
-		return nil, errors.Wrap(fmt.Errorf("(%s): invalid key type: %T ", v.name, k), http.StatusBadRequest)
-	}
-	signature, err := cryptoutils.Sign(key.PrivateKey, digest)
-	if err != nil {
-		return nil, fmt.Errorf("(%s): %v", v.name, err)
-	}
-	return signature, nil
-}
 
 // Unlock unlock all encrypted keys on disk
 func (v *Vault) Unlock(ctx context.Context) error {
@@ -153,7 +102,6 @@ func (v *Vault) Unlock(ctx context.Context) error {
 	v.mtx.Unlock()
 
 	keys := make([]*PrivateKey, len(v.raw))
-	index := make(map[string]*PrivateKey, len(v.raw))
 
 	for i, entry := range v.raw {
 		name := entry.ID
@@ -161,66 +109,63 @@ func (v *Vault) Unlock(ctx context.Context) error {
 			name = "<unnamed>"
 		}
 
-		pk, err := mavryk.ParsePrivateKey(entry.Data, utils.KeyboardInteractivePassphraseFunc(fmt.Sprintf("(%s): Enter password to unlock key `%s': ", v.name, name)))
+		mvPrivEnc, err := b58.ParseEncryptedPrivateKey([]byte(entry.Data))
 		if err != nil {
-			return fmt.Errorf("(%s): %v", v.name, err)
+			return fmt.Errorf("(%s): %w", v.name, err)
+		}
+		mvPriv, err := mvPrivEnc.Decrypt(utils.KeyboardInteractivePassphraseFunc(fmt.Sprintf("(%s): Enter password to unlock key `%s': ", v.name, name)))
+		if err != nil {
+			return fmt.Errorf("(%s): %w", v.name, err)
+		}
+		priv, err := crypt.NewPrivateKey(mvPriv)
+		if err != nil {
+			return fmt.Errorf("(%s): %w", v.name, err)
 		}
 
-		id := entry.ID
-		if id == "" {
-			id, err = mavryk.EncodePublicKeyHash(pk.Public())
-			if err != nil {
-				return fmt.Errorf("(%s): %v", v.name, err)
-			}
-		}
 		key := PrivateKey{
-			PrivateKey: pk,
-			KeyID:      id,
+			Key: priv,
+			ID:  entry.ID,
 		}
 		keys[i] = &key
-		index[key.KeyID] = &key
 	}
 
 	v.mtx.Lock()
 	defer v.mtx.Unlock()
 
 	v.keys = keys
-	v.index = index
 	v.unlocked = true
 
 	return nil
 }
 
-func (v *Vault) ImportKey(ctx context.Context, pk cryptoutils.PrivateKey, opt utils.Options) (vault.StoredKey, error) {
-	id, ok, err := opt.GetString("name")
+func (v *Vault) ImportKey(ctx context.Context, priv crypt.PrivateKey, opt utils.Options) (vault.KeyReference, error) {
+	id, _, err := opt.GetString("name")
 	if err != nil {
-		return nil, fmt.Errorf("(%s): %v", v.name, err)
+		return nil, fmt.Errorf("(%s): %w", v.name, err)
 	}
 
-	if !ok || id == "" {
-		id, err = mavryk.EncodePublicKeyHash(pk.Public())
-		if err != nil {
-			return nil, fmt.Errorf("(%s): %v", v.name, err)
-		}
-	}
-	key := PrivateKey{
-		PrivateKey: pk,
-		KeyID:      id,
+	key := &PrivateKey{
+		Key: priv,
+		ID:  id,
 	}
 
 	v.mtx.Lock()
 	defer v.mtx.Unlock()
-	v.keys = append(v.keys, &key)
-	v.index[key.KeyID] = &key
+	v.keys = append(v.keys, key)
 
-	return &key, nil
+	return &keyRef{
+		PrivateKey: key,
+		v:          v,
+	}, nil
 }
+
+func (v *Vault) Close(context.Context) error { return nil }
 
 type Importer struct {
 	*Vault
 }
 
-func (i *Importer) Import(ctx context.Context, pk cryptoutils.PrivateKey, opt utils.Options) (vault.StoredKey, error) {
+func (i *Importer) Import(ctx context.Context, pk crypt.PrivateKey, opt utils.Options) (vault.KeyReference, error) {
 	return i.ImportKey(ctx, pk, opt)
 }
 
