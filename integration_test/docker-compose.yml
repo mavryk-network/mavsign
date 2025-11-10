@@ -4,16 +4,16 @@ networks:
 
 services:
 
-  flexmasa:
-    container_name: flexmasa
-    image: mavrykdynamics/flexmasa:boreas-update-run
+  mavbox:
+    container_name: mavbox
+    image: mavrykdynamics/mavbox:boreas-update-run
     ports:
       - "20000:20000"
       - "20001:20001"
     networks:
       - ecadnet
     volumes:
-      - ./flexmasa.sh:/usr/bin/sigybox
+      - ./mavbox.sh:/usr/bin/sigybox
     environment:
       - block_time=3
     command: sigybox $PROTOCOL
@@ -24,16 +24,16 @@ services:
       retries: 20
       start_period: 10s
 
-  flexmasanobaking:
-    container_name: flexmasanobaking
-    image: mavrykdynamics/flexmasa:boreas-update-run
+  mavboxnobaking:
+    container_name: mavboxnobaking
+    image: mavrykdynamics/mavbox:boreas-update-run
     ports:
       - "30000:20000"
       - "30001:20001"
     networks:
       - ecadnet
     volumes:
-      - ./flexmasanobaking.sh:/usr/bin/sigybox
+      - ./mavboxnobaking.sh:/usr/bin/sigybox
     environment:
       - block_time=3
     command: sigybox $PROTOCOL
@@ -54,7 +54,7 @@ services:
       - ./.mavryk-client:/home/mavryk/.mavryk-client
       - ./contract.event.tz:/home/mavryk/contract.event.tz
     depends_on:
-      flexmasa:
+      mavbox:
         condition: service_healthy
       mavsign:
         condition: service_healthy

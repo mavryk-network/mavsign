@@ -1,12 +1,12 @@
 ## Integration test
 
-The tests in this folder use a docker compose file to orchestrate the starting of `MavSign`, `flexmasa`, `mavryk`, and `speculos` containers.  
+The tests in this folder use a docker compose file to orchestrate the starting of `MavSign`, `mavbox`, `mavryk`, and `speculos` containers.  
 
 The version of MavSign that is run is defined by an environment variable named `IMAGE`.
 
 The `mavkit-client` that is run by the tests is provided by the `mavryk` container. The version of `mavryk` container is defined by an environment variable named `MAVKIT_VERSION`.
 
-Currently, it is always the `latest` version of the `flexmasa` image that is run by the tests.  The economic protocol run by flexmasa is defined by an environment variable named `PROTOCOL`
+Currently, it is always the `latest` version of the `mavbox` image that is run by the tests.  The economic protocol run by mavbox is defined by an environment variable named `PROTOCOL`
 
 ## Pulling the images
 
@@ -14,7 +14,7 @@ Pre-release MavSign images are available in [github container registry](https://
 Official image releases are available in [dockerhub](https://hub.docker.com/r/mavryk-network/mavsign/tags)
 If you get a 404 from the github container registry web console, you can request access from an admin.
 
-[flexmasa](https://hub.docker.com/r/mavrykdynamics/flexmasa/tags) image is used.
+[mavbox](https://hub.docker.com/r/mavrykdynamics/mavbox/tags) image is used.
 
 [mavryk](https://hub.docker.com/r/mavryk/mavryk/tags) image is used
 
@@ -52,9 +52,9 @@ using main branch:
 export IMAGE=ghcr.io/mavryk-network/mavsign:main-${ARCH}
 ```
 
-Next, choose the economic protocol version run by flexmasa, and the version of mavkit-mavkit client.
+Next, choose the economic protocol version run by mavbox, and the version of mavkit-mavkit client.
 
-Choose the set of env var to use from the files `.env.current`, `.env.next`.  Use `current` if you'd like the economic protocol run by flexmasa to match mainnet, use `next` if you'd like the next protocol instead.
+Choose the set of env var to use from the files `.env.current`, `.env.next`.  Use `current` if you'd like the economic protocol run by mavbox to match mainnet, use `next` if you'd like the next protocol instead.
 
 So, to set the env to use mainnet protocol:
 
