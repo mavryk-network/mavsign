@@ -22,8 +22,8 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/hashicorp/vault/api v1.16.0
 	github.com/hashicorp/vault/api/auth/approle v0.9.0
-	github.com/mavryk-network/hid v1.0.1
-	github.com/mavryk-network/mavbingo/v2 v2.3.5
+	github.com/mavryk-network/hid v1.0.2
+	github.com/mavryk-network/mavbingo/v2 v2.3.6
 	github.com/prometheus/client_golang v1.22.0
 	github.com/segmentio/ksuid v1.0.4
 	github.com/sirupsen/logrus v1.9.3
