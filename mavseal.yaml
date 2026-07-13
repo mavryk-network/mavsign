@@ -64,7 +64,7 @@ mavryk:
     # purposes.
     log_payloads: true
     allow:
-      # List of [block, endorsement, failing_noop, generic, preendorsement]
+      # List of [block, endorsement, failing_noop, generic, pack, preendorsement]
       generic:
         # List of
         # [activate_account, attestation, attestation_with_dal, ballot, dal_publish_commitment, delegation, double_attestation_evidence,
